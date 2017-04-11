@@ -1,0 +1,62 @@
+A51 MACRO ASSEMBLER  EXP1                                                                 03/14/2017 19:29:55 PAGE     1
+
+
+MACRO ASSEMBLER A51 V8.02
+OBJECT MODULE PLACED IN exp1.OBJ
+ASSEMBLER INVOKED BY: C:\Keil\C51\BIN\A51.EXE exp1.A51 SET(SMALL) DEBUG EP
+
+LOC  OBJ            LINE     SOURCE
+
+  00FF                 1     WDTCN DATA 0FFH
+0000                   2     ORG 0000H
+0000 2100              3     AJMP START
+0100                   4     ORG 0100H
+0100                   5     START:
+0100 75FFDE            6             MOV WDTCN, #0DEH
+0103 75FFAD            7             MOV WDTCN, #0ADH
+0106 7820              8             MOV R0, #20H
+0108 900126            9             MOV DPTR, #CONST
+010B E4               10             CLR A
+010C 93               11             MOVC A, @A+DPTR
+010D F9               12             MOV R1, A
+010E E4               13             CLR A
+010F A3               14             INC DPTR
+0110 93               15             MOVC A, @A+DPTR
+0111 FA               16             MOV R2, A
+0112 900000           17             MOV DPTR, #0000H
+0115 E0               18             MOVX A, @DPTR
+0116 29               19             ADD A, R1
+0117 D4               20             DA A
+0118 F6               21             MOV @R0, A
+0119 A3               22             INC DPTR
+011A 08               23             INC R0
+011B E0               24             MOVX A, @DPTR
+011C 3A               25             ADDC A, R2
+011D D4               26             DA A
+011E F6               27             MOV @R0, A
+011F 08               28             INC R0
+0120 E4               29             CLR A
+0121 92E0             30             MOV ACC.0, C
+0123 F6               31             MOV @R0, A
+0124 80FE             32             SJMP $
+0126                  33     CONST:
+0126 1234             34             DW 1234H
+                      35             END
+A51 MACRO ASSEMBLER  EXP1                                                                 03/14/2017 19:29:55 PAGE     2
+
+SYMBOL TABLE LISTING
+------ ----- -------
+
+
+N A M E             T Y P E  V A L U E   ATTRIBUTES
+
+ACC. . . . . . . .  D ADDR   00E0H   A   
+CONST. . . . . . .  C ADDR   0126H   A   
+START. . . . . . .  C ADDR   0100H   A   
+WDTCN. . . . . . .  D ADDR   00FFH   A   
+
+
+REGISTER BANK(S) USED: 0 
+
+
+ASSEMBLY COMPLETE.  0 WARNING(S), 0 ERROR(S)

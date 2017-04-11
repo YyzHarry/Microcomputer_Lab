@@ -1,0 +1,92 @@
+A51 MACRO ASSEMBLER  EXP1_2                                                               03/14/2017 20:37:45 PAGE     1
+
+
+MACRO ASSEMBLER A51 V8.02
+OBJECT MODULE PLACED IN exp1_2.OBJ
+ASSEMBLER INVOKED BY: C:\Keil\C51\BIN\A51.EXE exp1_2.A51 SET(SMALL) DEBUG EP
+
+LOC  OBJ            LINE     SOURCE
+
+  00FF                 1     WDTCN DATA 0FFH
+0000                   2     ORG 0000H
+0000 2100              3     AJMP START
+0100                   4     ORG 0100H
+                       5     
+0100                   6     START:
+0100 75FFDE            7             MOV WDTCN, #0DEH
+0103 75FFAD            8             MOV WDTCN, #0ADH        ;stop the watch dog circuit
+                       9     
+                      10             ;20H with low byte of final result
+0106 7820             11             MOV R0, #20H            
+                      12             ;MOV A, #00H            
+0108 E4               13             CLR A
+0109 F6               14             MOV @R0, A              ;initialize 20H-22H
+010A 08               15             INC R0    
+010B F6               16             MOV @R0, A                      
+010C 08               17             INC R0
+010D F6               18             MOV @R0, A                      
+                      19             ;MOV R0, #20H           ;initialize
+                      20     
+010E 900135           21             MOV DPTR, #CONST        ;acquire loop numbers
+0111 E4               22             CLR A
+0112 93               23             MOVC A,@A+DPTR
+0113 FF               24             MOV R7, A
+0114 900000           25             MOV DPTR, #0000H        ;first number location
+0117                  26     LOOP:
+                      27             ;add low byte
+0117 7820             28             MOV R0, #20H
+0119 E6               29             MOV A, @R0
+011A F9               30             MOV R1, A
+011B E0               31             MOVX A, @DPTR
+011C 29               32             ADD A, R1
+011D D4               33             DA A
+011E F6               34             MOV @R0, A
+011F A3               35             INC DPTR
+                      36     
+                      37             ;add high byte
+0120 08               38             INC R0
+0121 E6               39             MOV A, @R0
+0122 F9               40             MOV R1, A
+0123 E0               41             MOVX A, @DPTR
+0124 39               42             ADDC A, R1
+0125 D4               43             DA A
+0126 F6               44             MOV @R0, A
+0127 A3               45             INC DPTR
+                      46     
+                      47             ;carry add
+0128 08               48             INC R0
+0129 E6               49             MOV A, @R0
+012A F9               50             MOV R1, A
+012B E4               51             CLR A
+012C 92E0             52             MOV ACC.0, C
+012E 29               53             ADD A, R1
+012F D4               54             DA A
+0130 F6               55             MOV @R0, A
+                      56     
+0131 DFE4             57             DJNZ R7, LOOP
+0133 80FE             58             SJMP $  ;keep looping
+A51 MACRO ASSEMBLER  EXP1_2                                                               03/14/2017 20:37:45 PAGE     2
+
+                      59             
+0135                  60     CONST:
+0135 09               61             DB 09H  ;data 'N'
+                      62             END
+A51 MACRO ASSEMBLER  EXP1_2                                                               03/14/2017 20:37:45 PAGE     3
+
+SYMBOL TABLE LISTING
+------ ----- -------
+
+
+N A M E             T Y P E  V A L U E   ATTRIBUTES
+
+ACC. . . . . . . .  D ADDR   00E0H   A   
+CONST. . . . . . .  C ADDR   0135H   A   
+LOOP . . . . . . .  C ADDR   0117H   A   
+START. . . . . . .  C ADDR   0100H   A   
+WDTCN. . . . . . .  D ADDR   00FFH   A   
+
+
+REGISTER BANK(S) USED: 0 
+
+
+ASSEMBLY COMPLETE.  0 WARNING(S), 0 ERROR(S)

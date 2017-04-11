@@ -1,0 +1,84 @@
+BL51 BANKED LINKER/LOCATER V6.22                                                        03/14/2017  20:37:45  PAGE 1
+
+
+BL51 BANKED LINKER/LOCATER V6.22, INVOKED BY:
+C:\KEIL\C51\BIN\BL51.EXE exp1_2.obj TO exp1 RAMSIZE (256)
+
+
+INPUT MODULES INCLUDED:
+  exp1_2.obj (EXP1_2)
+
+
+LINK MAP OF MODULE:  exp1 (EXP1_2)
+
+
+            TYPE    BASE      LENGTH    RELOCATION   SEGMENT NAME
+            -----------------------------------------------------
+
+            * * * * * * *   D A T A   M E M O R Y   * * * * * * *
+            REG     0000H     0008H     ABSOLUTE     "REG BANK 0"
+
+            * * * * * * *   C O D E   M E M O R Y   * * * * * * *
+            CODE    0000H     0136H     ABSOLUTE     
+
+
+
+SYMBOL TABLE OF MODULE:  exp1 (EXP1_2)
+
+  VALUE           TYPE          NAME
+  ----------------------------------
+
+  -------         MODULE        EXP1_2
+  D:00E0H         SYMBOL        ACC
+  C:0135H         SYMBOL        CONST
+  C:0117H         SYMBOL        LOOP
+  C:0100H         SYMBOL        START
+  D:00FFH         SYMBOL        WDTCN
+  C:0000H         LINE#         3
+  C:0100H         LINE#         7
+  C:0103H         LINE#         8
+  C:0106H         LINE#         11
+  C:0108H         LINE#         13
+  C:0109H         LINE#         14
+  C:010AH         LINE#         15
+  C:010BH         LINE#         16
+  C:010CH         LINE#         17
+  C:010DH         LINE#         18
+  C:010EH         LINE#         21
+  C:0111H         LINE#         22
+  C:0112H         LINE#         23
+  C:0113H         LINE#         24
+  C:0114H         LINE#         25
+  C:0117H         LINE#         28
+  C:0119H         LINE#         29
+  C:011AH         LINE#         30
+  C:011BH         LINE#         31
+  C:011CH         LINE#         32
+  C:011DH         LINE#         33
+  C:011EH         LINE#         34
+  C:011FH         LINE#         35
+  C:0120H         LINE#         38
+  C:0121H         LINE#         39
+BL51 BANKED LINKER/LOCATER V6.22                                                      03/14/2017  20:37:45  PAGE 2
+
+
+  C:0122H         LINE#         40
+  C:0123H         LINE#         41
+  C:0124H         LINE#         42
+  C:0125H         LINE#         43
+  C:0126H         LINE#         44
+  C:0127H         LINE#         45
+  C:0128H         LINE#         48
+  C:0129H         LINE#         49
+  C:012AH         LINE#         50
+  C:012BH         LINE#         51
+  C:012CH         LINE#         52
+  C:012EH         LINE#         53
+  C:012FH         LINE#         54
+  C:0130H         LINE#         55
+  C:0131H         LINE#         57
+  C:0133H         LINE#         58
+  -------         ENDMOD        EXP1_2
+
+Program Size: data=8.0 xdata=0 code=310
+LINK/LOCATE RUN COMPLETE.  0 WARNING(S),  0 ERROR(S)

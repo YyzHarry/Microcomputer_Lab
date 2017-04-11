@@ -1,0 +1,52 @@
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Project:</h2>
+C:\Documents and Settings\Administrator\×ÀÃæ\Microcomputer_Lab\exp1\exp1.uvproj
+Project File Date:  03/14/2017
+
+<h2>Output:</h2>
+Build target 'Target 1'
+assembling STARTUP.A51...
+linking...
+*** WARNING L1: UNRESOLVED EXTERNAL SYMBOL
+    SYMBOL:  ?C_START
+    MODULE:  STARTUP.obj (?C_STARTUP)
+*** WARNING L2: REFERENCE MADE TO UNRESOLVED EXTERNAL
+    SYMBOL:  ?C_START
+    MODULE:  STARTUP.obj (?C_STARTUP)
+    ADDRESS: 000DH
+Program Size: data=9.0 xdata=0 code=15
+"exp1" - 0 Error(s), 2 Warning(s).
+Build target 'Target 1'
+linking...
+*** WARNING L1: UNRESOLVED EXTERNAL SYMBOL
+    SYMBOL:  ?C_START
+    MODULE:  STARTUP.obj (?C_STARTUP)
+*** WARNING L2: REFERENCE MADE TO UNRESOLVED EXTERNAL
+    SYMBOL:  ?C_START
+    MODULE:  STARTUP.obj (?C_STARTUP)
+    ADDRESS: 000DH
+Program Size: data=9.0 xdata=0 code=15
+"exp1" - 0 Error(s), 2 Warning(s).
+Build target 'Target 1'
+assembling exp1_2.A51...
+linking...
+Program Size: data=8.0 xdata=0 code=311
+"exp1" - 0 Error(s), 0 Warning(s).
+Build target 'Target 1'
+assembling exp1_2.A51...
+exp1_2.A51(7): error A45: UNDEFINED SYMBOL (PASS-2)
+exp1_2.A51(8): error A45: UNDEFINED SYMBOL (PASS-2)
+Target not created
+Build target 'Target 1'
+assembling exp1_2.A51...
+linking...
+Program Size: data=8.0 xdata=0 code=311
+"exp1" - 0 Error(s), 0 Warning(s).
+Build target 'Target 1'
+assembling exp1_2.A51...
+linking...
+Program Size: data=8.0 xdata=0 code=310
+"exp1" - 0 Error(s), 0 Warning(s).
