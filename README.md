@@ -1,7 +1,9 @@
-# LaTex Templates
+# Microcomputer Lab
 
 ## Introduction
-This is a LaTex Template for IEEE with _two sides_. 
+This is my code for _Experiments on Microcomputer and Interface Technology Course_, EE, Peking University.
 
-## Usage
-Compile the __.tex__ file to establish a PDF file. 
+Implemented by __C51__.
+
+## Index
+Coming soon. ~~Not Complete Yet.~~
