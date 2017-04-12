@@ -1,0 +1,269 @@
+BL51 BANKED LINKER/LOCATER V6.22                                                        04/11/2017  19:52:16  PAGE 1
+
+
+BL51 BANKED LINKER/LOCATER V6.22, INVOKED BY:
+C:\KEIL\C51\BIN\BL51.EXE UART_Signal.obj TO exp5 RAMSIZE (256)
+
+
+MEMORY MODEL: SMALL
+
+
+INPUT MODULES INCLUDED:
+  UART_Signal.obj (UART_SIGNAL)
+  C:\KEIL\C51\LIB\C51S.LIB (?C_STARTUP)
+
+
+LINK MAP OF MODULE:  exp5 (UART_SIGNAL)
+
+
+            TYPE    BASE      LENGTH    RELOCATION   SEGMENT NAME
+            -----------------------------------------------------
+
+            * * * * * * *   D A T A   M E M O R Y   * * * * * * *
+            REG     0000H     0008H     ABSOLUTE     "REG BANK 0"
+            DATA    0008H     0016H     UNIT         ?DT?UART_SIGNAL
+            DATA    001EH     0003H     UNIT         _DATA_GROUP_
+            IDATA   0021H     0001H     UNIT         ?STACK
+
+            * * * * * * *  X D A T A   M E M O R Y  * * * * * * *
+                    0000H     8000H                  *** GAP ***
+            XDATA   8000H     0001H     ABSOLUTE     
+            XDATA   8001H     0001H     ABSOLUTE     
+
+            * * * * * * *   C O D E   M E M O R Y   * * * * * * *
+            CODE    0000H     0003H     ABSOLUTE     
+            CODE    0003H     001CH     UNIT         ?PR?SYSCLK_INIT?UART_SIGNAL
+                    001FH     0004H                  *** GAP ***
+            CODE    0023H     0003H     ABSOLUTE     
+            CODE    0026H     0096H     UNIT         ?PR?MAIN?UART_SIGNAL
+            CODE    00BCH     0069H     UNIT         ?PR?UART0_ISR?UART_SIGNAL
+            CODE    0125H     005EH     UNIT         ?PR?GETKEY?UART_SIGNAL
+            CODE    0183H     0034H     UNIT         ?CO?UART_SIGNAL
+            CODE    01B7H     0019H     UNIT         ?PR?PORT_INIT?UART_SIGNAL
+            CODE    01D0H     0018H     UNIT         ?PR?_DELAY?UART_SIGNAL
+            CODE    01E8H     000FH     UNIT         ?PR?UART0_INIT?UART_SIGNAL
+            CODE    01F7H     000CH     UNIT         ?C_C51STARTUP
+
+
+
+OVERLAY MAP OF MODULE:   exp5 (UART_SIGNAL)
+
+
+SEGMENT                               DATA_GROUP 
+  +--> CALLED SEGMENT               START    LENGTH
+---------------------------------------------------
+?C_C51STARTUP                       -----    -----
+  +--> ?PR?MAIN?UART_SIGNAL
+
+?PR?MAIN?UART_SIGNAL                001EH    0002H
+  +--> ?PR?SYSCLK_INIT?UART_SIGNAL
+  +--> ?PR?PORT_INIT?UART_SIGNAL
+  +--> ?PR?UART0_INIT?UART_SIGNAL
+BL51 BANKED LINKER/LOCATER V6.22                                                      04/11/2017  19:52:16  PAGE 2
+
+
+  +--> ?PR?GETKEY?UART_SIGNAL
+  +--> ?CO?UART_SIGNAL
+  +--> ?PR?_DELAY?UART_SIGNAL
+
+?PR?GETKEY?UART_SIGNAL              0020H    0001H
+  +--> ?PR?_DELAY?UART_SIGNAL
+  +--> ?CO?UART_SIGNAL
+
+
+
+SYMBOL TABLE OF MODULE:  exp5 (UART_SIGNAL)
+
+  VALUE           TYPE          NAME
+  ----------------------------------
+
+  -------         MODULE        UART_SIGNAL
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  D:00FFH         PUBLIC        WDTCN
+  D:0084H         PUBLIC        P4
+  B:00A8H.7       PUBLIC        EA
+  D:00E8H         PUBLIC        ADC0CN
+  D:00A4H         PUBLIC        P0MDOUT
+  C:0125H         PUBLIC        getkey
+  D:00A5H         PUBLIC        P1MDOUT
+  D:00A8H         PUBLIC        IE
+  D:00A6H         PUBLIC        P2MDOUT
+  D:00A7H         PUBLIC        P3MDOUT
+  D:00A3H         PUBLIC        EMI0CF
+  D:00D8H         PUBLIC        PCA0CN
+  D:00B8H         PUBLIC        IP
+  D:00E1H         PUBLIC        XBR0
+  D:00E3H         PUBLIC        XBR2
+  D:00C0H         PUBLIC        SMB0CN
+  C:0026H         PUBLIC        main
+  D:00F8H         PUBLIC        SPI0CN
+  D:0087H         PUBLIC        PCON
+  C:0183H         PUBLIC        segs
+  D:0089H         PUBLIC        TMOD
+  D:0088H         PUBLIC        TCON
+  C:00BCH         PUBLIC        UART0_ISR
+  C:01B7H         PUBLIC        PORT_Init
+  X:8000H         PUBLIC        seg
+  D:00B2H         PUBLIC        OSCICN
+  B:00A8H.4       PUBLIC        ES0
+  C:0193H         PUBLIC        css
+  D:0008H         PUBLIC        ch
+  B:0098H.0       PUBLIC        RI0
+  B:0098H.1       PUBLIC        TI0
+  D:008DH         PUBLIC        TH1
+  D:00B1H         PUBLIC        OSCXCN
+  C:0003H         PUBLIC        SYSCLK_Init
+  X:8001H         PUBLIC        cs
+  B:0088H.6       PUBLIC        TR1
+  D:0099H         PUBLIC        SBUF0
+  C:01E8H         PUBLIC        UART0_Init
+  D:0098H         PUBLIC        SCON0
+  D:00C8H         PUBLIC        T2CON
+BL51 BANKED LINKER/LOCATER V6.22                                                      04/11/2017  19:52:16  PAGE 3
+
+
+  D:0009H         PUBLIC        RxBuf
+  C:01D0H         PUBLIC        _Delay
+  D:001DH         PUBLIC        RxIdx
+  D:00D0H         PUBLIC        PSW
+  -------         PROC          PORT_INIT
+  C:01B7H         LINE#         21
+  C:01B7H         LINE#         22
+  C:01B7H         LINE#         23
+  C:01BAH         LINE#         24
+  C:01BDH         LINE#         25
+  C:01C0H         LINE#         26
+  C:01C3H         LINE#         27
+  C:01C6H         LINE#         28
+  C:01C9H         LINE#         29
+  C:01CCH         LINE#         30
+  C:01CFH         LINE#         32
+  -------         ENDPROC       PORT_INIT
+  -------         PROC          UART0_INIT
+  C:01E8H         LINE#         33
+  C:01E8H         LINE#         34
+  C:01E8H         LINE#         35
+  C:01EBH         LINE#         36
+  C:01EEH         LINE#         37
+  C:01F1H         LINE#         38
+  C:01F3H         LINE#         39
+  C:01F6H         LINE#         40
+  -------         ENDPROC       UART0_INIT
+  -------         PROC          SYSCLK_INIT
+  -------         DO            
+  D:0006H         SYMBOL        i
+  -------         ENDDO         
+  C:0003H         LINE#         41
+  C:0003H         LINE#         42
+  C:0003H         LINE#         44
+  C:0006H         LINE#         45
+  C:0016H         LINE#         46
+  C:001BH         LINE#         47
+  C:001EH         LINE#         48
+  -------         ENDPROC       SYSCLK_INIT
+  -------         PROC          _DELAY
+  D:0006H         SYMBOL        k
+  -------         DO            
+  D:0004H         SYMBOL        i
+  -------         ENDDO         
+  C:01D0H         LINE#         49
+  C:01D0H         LINE#         50
+  C:01D0H         LINE#         52
+  C:01E7H         LINE#         53
+  -------         ENDPROC       _DELAY
+  -------         PROC          GETKEY
+  -------         DO            
+  D:0002H         SYMBOL        m
+  D:0001H         SYMBOL        i
+  D:0020H         SYMBOL        key
+  C:0197H         SYMBOL        dec
+  C:01A7H         SYMBOL        trans
+  -------         ENDDO         
+BL51 BANKED LINKER/LOCATER V6.22                                                      04/11/2017  19:52:16  PAGE 4
+
+
+  C:0125H         LINE#         54
+  C:0125H         LINE#         55
+  C:0125H         LINE#         61
+  C:0128H         LINE#         62
+  C:012FH         LINE#         63
+  C:0135H         LINE#         64
+  C:013AH         LINE#         65
+  C:0145H         LINE#         66
+  C:0148H         LINE#         67
+  C:015AH         LINE#         68
+  C:015DH         LINE#         69
+  C:0164H         LINE#         70
+  C:0167H         LINE#         71
+  C:016BH         LINE#         72
+  C:0170H         LINE#         73
+  C:017BH         LINE#         74
+  C:0181H         LINE#         75
+  C:0182H         LINE#         76
+  -------         ENDPROC       GETKEY
+  -------         PROC          UART0_ISR
+  -------         DO            
+  D:0007H         SYMBOL        c
+  D:0006H         SYMBOL        i
+  -------         ENDDO         
+  C:00BCH         LINE#         78
+  C:00CBH         LINE#         82
+  C:00CEH         LINE#         83
+  C:00D0H         LINE#         84
+  C:00D2H         LINE#         85
+  C:00F2H         LINE#         86
+  C:00F4H         LINE#         87
+  C:0104H         LINE#         88
+  C:0106H         LINE#         89
+  C:0106H         LINE#         90
+  C:0108H         LINE#         91
+  C:010BH         LINE#         92
+  C:010DH         LINE#         93
+  C:0112H         LINE#         94
+  C:0115H         LINE#         95
+  C:0118H         LINE#         96
+  C:0118H         LINE#         97
+  C:0118H         LINE#         98
+  -------         ENDPROC       UART0_ISR
+  -------         PROC          MAIN
+  -------         DO            
+  D:0003H         SYMBOL        tmp
+  -------         DO            
+  D:001EH         SYMBOL        c
+  D:001FH         SYMBOL        i
+  -------         ENDDO         
+  -------         ENDDO         
+  C:0026H         LINE#         100
+  C:0026H         LINE#         102
+  C:0029H         LINE#         103
+  C:002CH         LINE#         104
+  C:002FH         LINE#         105
+  C:0032H         LINE#         106
+BL51 BANKED LINKER/LOCATER V6.22                                                      04/11/2017  19:52:16  PAGE 5
+
+
+  C:0035H         LINE#         107
+  C:0037H         LINE#         108
+  C:0039H         LINE#         110
+  C:003BH         LINE#         111
+  C:003DH         LINE#         112
+  C:003FH         LINE#         115
+  C:003FH         LINE#         118
+  C:0044H         LINE#         119
+  C:0046H         LINE#         120
+  C:004AH         LINE#         121
+  C:004CH         LINE#         122
+  C:004EH         LINE#         123
+  C:004EH         LINE#         125
+  C:0058H         LINE#         126
+  C:0060H         LINE#         127
+  C:0070H         LINE#         128
+  C:0080H         LINE#         130
+  C:0097H         LINE#         131
+  C:00B1H         LINE#         132
+  C:00B8H         LINE#         133
+  -------         ENDPROC       MAIN
+  -------         ENDMOD        UART_SIGNAL
+
+Program Size: data=34.0 xdata=2 code=511
+LINK/LOCATE RUN COMPLETE.  0 WARNING(S),  0 ERROR(S)

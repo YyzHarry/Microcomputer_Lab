@@ -1,0 +1,62 @@
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Project:</h2>
+D:\STUDENT\exp5\exp5.uvproj
+Project File Date:  04/11/2017
+
+<h2>Output:</h2>
+Build target 'Target 1'
+compiling UART_Signal.c...
+linking...
+Program Size: data=9.0 xdata=0 code=93
+"exp5" - 0 Error(s), 0 Warning(s).
+Build target 'Target 1'
+compiling UART_Signal.c...
+linking...
+Program Size: data=36.0 xdata=2 code=657
+"exp5" - 0 Error(s), 0 Warning(s).
+Build target 'Target 1'
+compiling UART_Signal.c...
+linking...
+Program Size: data=34.0 xdata=2 code=476
+"exp5" - 0 Error(s), 0 Warning(s).
+Build target 'Target 1'
+compiling UART_Signal.c...
+linking...
+Program Size: data=34.0 xdata=2 code=491
+"exp5" - 0 Error(s), 0 Warning(s).
+Build target 'Target 1'
+compiling UART_Signal.c...
+linking...
+Program Size: data=34.0 xdata=2 code=491
+"exp5" - 0 Error(s), 0 Warning(s).
+Build target 'Target 1'
+compiling UART_Signal.c...
+UART_SIGNAL.C(119): error C141: syntax error near 'char'
+UART_SIGNAL.C(119): error C202: 'c': undefined identifier
+UART_SIGNAL.C(120): error C141: syntax error near 'unsigned'
+UART_SIGNAL.C(120): error C202: 'i': undefined identifier
+UART_SIGNAL.C(121): error C202: 'i': undefined identifier
+UART_SIGNAL.C(122): error C202: 'c': undefined identifier
+UART_SIGNAL.C(123): error C202: 'c': undefined identifier
+UART_SIGNAL.C(124): error C202: 'c': undefined identifier
+UART_SIGNAL.C(126): error C202: 'c': undefined identifier
+UART_SIGNAL.C(127): error C202: 'i': undefined identifier
+Target not created
+Build target 'Target 1'
+compiling UART_Signal.c...
+linking...
+Program Size: data=35.0 xdata=2 code=489
+"exp5" - 0 Error(s), 0 Warning(s).
+Build target 'Target 1'
+compiling UART_Signal.c...
+linking...
+Program Size: data=36.0 xdata=2 code=657
+"exp5" - 0 Error(s), 0 Warning(s).
+Build target 'Target 1'
+compiling UART_Signal.c...
+linking...
+Program Size: data=34.0 xdata=2 code=511
+"exp5" - 0 Error(s), 0 Warning(s).
