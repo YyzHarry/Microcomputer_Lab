@@ -1,0 +1,205 @@
+C51 COMPILER V9.01   FLASH_W_R                                                             04/18/2017 20:16:00 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE FLASH_W_R
+OBJECT MODULE PLACED IN Flash_w_r.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE Flash_w_r.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include <c8051f020.h>
+   2          #include<stdio.h>
+   3          #define SYSCLK 22118400
+   4          #define SPICLK 2000000
+   5          #define BAUDRATE 1200 //波特率 9600?
+   6          
+   7          void SYSCLK_Init (void)
+   8          {
+   9   1              int i;
+  10   1              OSCXCN = 0x67; // 启动外部晶振
+  11   1              for (i=0; i < 256; i++); // 延时一段时间
+  12   1              while (!(OSCXCN & 0x80)); // 等待振荡稳定
+  13   1              OSCICN = 0x88; // 使用外部振荡器
+  14   1      }
+  15          
+  16          void PORT_Init()
+  17          {
+  18   1              XBR0 = 0x06; // 允许SPI 和UART
+  19   1              XBR2 = 0x40; // 允许XBR
+  20   1              P0MDOUT |= 0x15; // TX, SCK, MOSI 设置为推挽输出
+  21   1              P74OUT = 0x20; // p6.7 用作片选信号
+  22   1      }
+  23          
+  24          void UART0_Init (void)
+  25          {
+  26   1              SCON0 = 0x50; // SCON0: 串口方式1 使能RX
+  27   1              TMOD = 0x20; // 定时器 1 采用自装载模式
+  28   1              TH1 = -(SYSCLK/BAUDRATE/16/12); // Timer1 载入值
+  29   1              TR1 = 1; // 启动 Timer1
+  30   1              PCON |= 0x80; // SMOD0 = 1
+  31   1      }
+  32          
+  33          void SPI0_Init()
+  34          {
+  35   1              SPI0CFG = 0x07; // 8 位帧大小
+  36   1              SPI0CN = 0x03; // 主模式，允许SPI 设备
+  37   1              SPI0CKR = SYSCLK/2/SPICLK;
+  38   1      }
+  39          
+  40          unsigned char SPI_Write(unsigned char v)
+  41          {
+  42   1              SPIF = 0; // 清除中断标志
+  43   1              SPI0DAT = v; // 数据寄存器赋值
+  44   1              while (SPIF == 0); // 等待发送完成
+  45   1              return SPI0DAT; // 同时把接收到的结果返回
+  46   1      }
+  47          
+  48          void Timer0_us(int num)
+  49          {
+  50   1              int i;
+  51   1              for(i=0;i<1000*num;i++);        //注意延时长度 vs 10000
+  52   1              return;
+  53   1      }
+  54          
+  55          void busywait()  //在芯片正处于擦除、写入等操作时等待其完成
+C51 COMPILER V9.01   FLASH_W_R                                                             04/18/2017 20:16:00 PAGE 2   
+
+  56          {
+  57   1          P6 = 0x00; // 片选有效
+  58   1              Timer0_us(1);   // 写在里面？？
+  59   1              while(1){
+  60   2                      unsigned char v;
+  61   2                      SPI_Write(0x05);        // 读状态字命令
+  62   2                      v = SPI_Write(0x00);
+  63   2                      v = v & 0x1;    // 读取S0
+  64   2                      if(v == 0)
+  65   2                              break;
+  66   2              }
+  67   1              P6 = 0x80;  // 片选无效
+  68   1              Timer0_us(1);
+  69   1      }
+  70          
+  71          void main()
+  72          {
+  73   1              int j;
+  74   1              unsigned char c, v, v1;
+  75   1              long int add;
+  76   1              WDTCN = 0xde;
+  77   1              WDTCN = 0xad;
+  78   1              SYSCLK_Init();                  // 系统时钟设置
+  79   1              PORT_Init();                    // IO 管脚设置
+  80   1              P6 = 0x80;                              // 片选无效
+  81   1              UART0_Init();                   // 初始化串口
+  82   1              SPI0_Init();                    // 初始化SPI
+  83   1              Timer0_us(1000);                // 延时
+  84   1              P6 = 0x00;              // 片选有效
+  85   1              Timer0_us(1);   // 延时
+  86   1              
+  87   1              TI0 = 1;                   //初始化代码只需要在最外部运行即可
+  88   1              SPI_Write(0x9F);         // 写入读 JEDEC ID 命令
+  89   1              v = SPI_Write(0x00); // 从SPI设备读出厂商标识
+  90   1              printf("Manufacturer ID: %bx\r\n", v);
+  91   1              v = SPI_Write(0x00); // 从SPI设备读出存储器类型
+  92   1              printf("Memory Type ID: %bx\r\n", v);
+  93   1              v = SPI_Write(0x00); // 从SPI设备读出容量：理解为写入1个无关数据，MOSI和MISO的同步性
+  94   1              printf("Capacity ID: %bx\r\n", v);
+  95   1              Timer0_us(1);   // 延时
+  96   1              P6 = 0x80;              // 片选无效
+  97   1              
+  98   1              while(1) {
+  99   2                      do { // 过滤掉回车和空格字符，读取命令字节
+ 100   3                              c = getchar();
+ 101   3                      } while ((c == ' ') || (c == '\r') || (c == '\n'));
+ 102   2                      scanf("%lx", &add); // 读入地址值
+ 103   2                      switch (c) {
+ 104   3                              case 'd': // Display
+ 105   3                                      P6 = 0x00; // 片选有效
+ 106   3                                      Timer0_us(1);
+ 107   3                                      SPI_Write(0x03); // 读数据命令
+ 108   3                                      SPI_Write((add & 0x00FF0000) >> 16);
+ 109   3                                      SPI_Write((add & 0x0000FF00) >> 8);
+ 110   3                                      SPI_Write(add & 0x00FF); // 24 位地址
+ 111   3                                      Timer0_us(1);
+ 112   3                                               
+ 113   3                                      //TI0 = 1;              //不需要在运行中加入初始化代码!                         
+ 114   3                                      for(j = 0; j < 16; j++){
+ 115   4                                              v = SPI_Write(0x00); // 读数据
+ 116   4                                              printf("%02bx", v);
+ 117   4                                              if(j != 15)
+C51 COMPILER V9.01   FLASH_W_R                                                             04/18/2017 20:16:00 PAGE 3   
+
+ 118   4                                                      printf(" ");
+ 119   4                                              if(j == 7)
+ 120   4                                                      printf("- ");
+ 121   4                                              if(j == 15)     
+ 122   4                                                      printf("\r\nDisplay %lx OK\r\n", add);
+ 123   4                                      }
+ 124   3                                      Timer0_us(1);
+ 125   3                                      busywait();
+ 126   3                                      P6 = 0x80; // 片选无效
+ 127   3                                      break;
+ 128   3                              case 'w': // Write
+ 129   3                                      scanf("%lx", &v1); // 继续读入要写入的字节内容
+ 130   3                                      P6 = 0x00; // 片选有效
+ 131   3                                      Timer0_us(1);
+ 132   3                                      SPI_Write(0x06); // 写入允许命令
+ 133   3                                      Timer0_us(1);
+ 134   3                                      P6 = 0x80; // 片选无效
+ 135   3                                      Timer0_us(1);
+ 136   3                                      P6 = 0x0; // 再次设置片选
+ 137   3                                      Timer0_us(1);
+ 138   3                                      SPI_Write(0x02); // 写命令
+ 139   3                                      SPI_Write((add & 0x00FF0000) >> 16);
+ 140   3                                      SPI_Write((add & 0x0000FF00) >> 8);
+ 141   3                                      SPI_Write(add & 0x00FF); // 24 位地址
+ 142   3                                      SPI_Write(v1); // 数据
+ 143   3                                      Timer0_us(1);
+ 144   3                                      P6 = 0x80; // 片选无效
+ 145   3                                      Timer0_us(1);
+ 146   3                                       
+ 147   3                                      //TI0 = 1;      // 不需要在运行中加入初始化代码
+ 148   3                                      busywait(); // 读取状态等待写入完成
+ 149   3                                      printf("\r\nWrite %lx %lx OK\r\n", add, v1);
+ 150   3                                      break;
+ 151   3                              case 'c': // Clear
+ 152   3                                      P6 = 0x00; // 片选有效                                Timer0_us(1);
+ 153   3                                      SPI_Write(0x06); // 写入允许命令
+ 154   3                                      Timer0_us(1);
+ 155   3                                      P6 = 0x80; // 片选无效
+ 156   3                                      Timer0_us(1);
+ 157   3      
+ 158   3                                      P6 = 0x0; // 再次设置片选
+ 159   3                                      Timer0_us(1);
+ 160   3                                      SPI_Write(0x20); // 4k清除命令
+ 161   3                                      SPI_Write((add & 0x00FF0000) >> 16);
+ 162   3                                      SPI_Write((add & 0x0000FF00) >> 8);
+ 163   3                                      SPI_Write(add & 0x00FF); // 24 位地址
+ 164   3                                      Timer0_us(1);
+ 165   3                                      P6 = 0x80; // 片选无效
+ 166   3      
+ 167   3                                      Timer0_us(1);
+ 168   3                                      //TI0 = 1;               // Here？这里需要启动传输？
+ 169   3                                      busywait(); // 读取状态等待写入完成
+ 170   3                                      printf("\r\nClear 4KB memory starting from %lx has done.\r\n", add);
+ 171   3                                      break;
+ 172   3                              default:
+ 173   3                                      printf("\r\rWrong command!\r\n");
+ 174   3                      }
+ 175   2              }
+ 176   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+C51 COMPILER V9.01   FLASH_W_R                                                             04/18/2017 20:16:00 PAGE 4   
+
+   CODE SIZE        =    639    ----
+   CONSTANT SIZE    =    187    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      10
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

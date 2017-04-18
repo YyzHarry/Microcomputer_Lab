@@ -1,0 +1,104 @@
+C51 COMPILER V9.01   EXP6                                                                  04/18/2017 19:12:21 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE EXP6
+OBJECT MODULE PLACED IN exp6.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE exp6.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include <c8051f020.h>
+   2          #include <stdio.h>
+   3          #define SYSCLK 22118400
+   4          #define SPICLK 1000000  // vs 100000
+   5          #define BAUDRATE 1200 // 波特率
+   6          
+   7          void SYSCLK_Init (void)
+   8          {
+   9   1              int i;
+  10   1              OSCXCN = 0x67; // 启动外部晶振
+  11   1              for (i=0; i < 256; i++); // 延时一段时间
+  12   1              while (!(OSCXCN & 0x80)); // 等待振荡稳定
+  13   1              OSCICN = 0x88; // 使用外部振荡器
+  14   1      }
+  15          
+  16          void PORT_Init()
+  17          {
+  18   1              XBR0 = 0x06; // 允许SPI 和UART
+  19   1              XBR2 = 0x40; // 允许XBR
+  20   1              P0MDOUT |= 0x15; // TX, SCK, MOSI 设置为推挽输出
+  21   1              P74OUT = 0x20; // p6.7 用作片选信号
+  22   1      }
+  23          
+  24          void UART0_Init (void)
+  25          {
+  26   1              SCON0 = 0x50; // SCON0: 串口方式1 使能RX
+  27   1              TMOD = 0x20; // 定时器 1 采用自装载模式
+  28   1              TH1 = -(SYSCLK/BAUDRATE/16/12); // Timer1 载入值
+  29   1              TR1 = 1; // 启动 Timer1
+  30   1              PCON |= 0x80; // SMOD0 = 1
+  31   1      }
+  32          
+  33          void SPI0_Init()
+  34          {
+  35   1              SPI0CFG = 0x07; // 8 位帧大小
+  36   1              SPI0CN = 0x03; // 主模式，允许SPI 设备
+  37   1              SPI0CKR = SYSCLK/2/SPICLK;
+  38   1      }
+  39          
+  40          unsigned char SPI_Write(unsigned char v)
+  41          {
+  42   1              SPIF = 0; // 清除中断标志
+  43   1              SPI0DAT = v; // 数据寄存器赋值
+  44   1              while (SPIF == 0); // 等待发送完成
+  45   1              return SPI0DAT; // 同时把接收到的结果返回
+  46   1      }
+  47          
+  48          void Timer0_us(int num)
+  49          {
+  50   1              int i;
+  51   1              for(i=0;i<1000*num;i++);
+  52   1              return;
+  53   1      }
+  54          
+  55          void main()
+C51 COMPILER V9.01   EXP6                                                                  04/18/2017 19:12:21 PAGE 2   
+
+  56          {
+  57   1              unsigned char v;
+  58   1              WDTCN = 0xde;
+  59   1              WDTCN = 0xad;
+  60   1              SYSCLK_Init();                  // 系统时钟设置
+  61   1              PORT_Init();                    // IO 管脚设置
+  62   1              P6 = 0x80;                              // 片选无效
+  63   1              UART0_Init();                   // 初始化串口
+  64   1              SPI0_Init();                    // 初始化SPI
+  65   1              Timer0_us(1000);                // 延时
+  66   1              P6 = 0x00;                              // 片选有效
+  67   1              Timer0_us(1);                   // 延时
+  68   1              TI0 = 1;                                // 开始发送数据。但是为什么呢？？中断？？
+  69   1              SPI_Write(0x9F);                // 写入读JEDEC ID 命令
+  70   1              v = SPI_Write(0x00);    // 从SPI 设备读出厂商标识
+  71   1              printf("Manufacturer ID: %bx\r\n", v);
+  72   1              v = SPI_Write(0x00);    // 从SPI 设备读出存储器类型
+  73   1              printf("Memory Type ID: %bx\r\n", v);
+  74   1              v = SPI_Write(0x00);    // 从SPI 设备读出容量
+  75   1              printf("Capacity ID: %bx\r\n", v);
+  76   1              Timer0_us(1);                   // 延时
+  77   1              P6 = 0x80;                              // 片选无效
+  78   1              while(1);
+  79   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    217    ----
+   CONSTANT SIZE    =     64    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
