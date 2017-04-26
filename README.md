@@ -1,7 +1,7 @@
 # Microcomputer Lab
 
 ## Introduction
-This is my code for _Experiments on Microcomputer and Interface Technology Course_, EE, Peking University.
+This is my code for ___Experiments on Microcomputer and Interface Technology___ Course, EE, Peking University.
 
 Implemented mostly by __C51__, some by __Assembly__.
 
@@ -12,9 +12,10 @@ Implemented mostly by __C51__, some by __Assembly__.
 4. AD & DA.
 5. Serial.
 6. SPI Bus.
-7. ___Coming soon___.
+7. I2C Bus.
+8. ___Coming soon___.
 
-~~Not Complete Yet.~~
+Note: Not Complete Yet.
 
 ## Environment
-Locally tested by ___Keil___. ___C8051F020___ is chosen as the chip we use.
+Locally tested by ___Keil___. ___C8051F020___ is the chip we use.
