@@ -1,0 +1,226 @@
+C51 COMPILER V9.01   DISPLAY_CLOCK                                                         04/25/2017 19:09:10 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE DISPLAY_CLOCK
+OBJECT MODULE PLACED IN Display_Clock.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE Display_Clock.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include <c8051f020.h>
+   2          #include <stdio.h>
+   3          #define SYSCLK 22118400
+   4          #define BAUDRATE 1200
+   5          #define I2CCLK 400000   //400kHz
+   6          
+   7          #define SMB_START 0X08
+   8          #define SMB_RP_START 0X10
+   9          #define SMB_MTADDACK 0X18
+  10          #define SMB_MTDBACK 0x28
+  11          #define SMB_MRADDACK 0x40
+  12          #define SMB_MRDBACK 0x50
+  13          #define SMB_MRDBNACK 0x58
+  14          #define SMB_MTADDNACK 0x20
+  15          #define SMB_MTDBNACK 0x30
+  16          #define SMB_MTARBLOST 0x38
+  17          #define SMB_MRADDNACK 0x48
+  18          
+  19          #define S_OVER 0x01        // 随意写一个不为0的数
+  20          #define R_OVER 0x02    // 随意写一个不为0的数
+  21          #define SMB_FAIL 0x03    // 随意写一个不为0的数
+  22          
+  23          
+  24          unsigned char smb_buf[20];
+  25          unsigned char smb_len;
+  26          unsigned char result;
+  27          
+  28          void SYSCLK_Init (void)
+  29          {
+  30   1              int i;
+  31   1              OSCXCN = 0x67; 
+  32   1              for (i=0; i < 256; i++); 
+  33   1              while (!(OSCXCN & 0x80)); 
+  34   1              OSCICN = 0x88; 
+  35   1      }
+  36          
+  37          void PORT_Init()
+  38          {
+  39   1              XBR0 = 0x05; 
+  40   1              XBR2 = 0x40; 
+  41   1              P0MDOUT |= 0x01;
+  42   1      }
+  43          
+  44          void UART0_Init (void)
+  45          {
+  46   1              SCON0 = 0x50;
+  47   1              TMOD = 0x20; 
+  48   1              TH1 = -(SYSCLK/BAUDRATE/16/12); 
+  49   1              TR1 = 1; 
+  50   1              PCON |= 0x80; 
+  51   1      }
+  52          
+  53          void I2C_Init()
+  54          {
+  55   1              SMB0CN = 0x07;
+C51 COMPILER V9.01   DISPLAY_CLOCK                                                         04/25/2017 19:09:10 PAGE 2   
+
+  56   1              SMB0CR = 257 - (SYSCLK / (2 * I2CCLK)); 
+  57   1              SMB0CN |= 0x40; 
+  58   1              STO = 0;
+  59   1      }
+  60          
+  61          void Timer0_ms(long num)
+  62          {
+  63   1              long i;
+  64   1              for(i=0;i<200*num;i++);
+  65   1              return;
+  66   1      }
+  67          
+  68          void Delay(int num)
+  69          {
+  70   1              int i;
+  71   1              for(i=0;i<10*num;i++);
+  72   1              return;
+  73   1      }
+  74          
+  75          void SMB_Transmit(unsigned char addr, unsigned char len)
+  76          {
+  77   1              result = 0;                     
+  78   1              smb_buf[0] = 0xD0;
+  79   1              smb_buf[1] = addr;
+  80   1              smb_len = len;          
+  81   1              STO = 0;                                        
+  82   1              STA = 1;
+  83   1              while (result == 0);
+  84   1              Delay(100);
+  85   1      }
+  86          
+  87          void SMB_Receive(unsigned char len)
+  88          {
+  89   1              result = 0;                                     
+  90   1              smb_buf[0] = 0xD1;              
+  91   1              smb_len = len;                          
+  92   1              STO = 0;                                                        
+  93   1              STA = 1;
+  94   1              while (result == 0);    
+  95   1              Delay(100);
+  96   1      }
+  97          
+  98          void SMBUS_ISR (void) interrupt 7
+  99          {
+ 100   1              bit FAIL = 0; 
+ 101   1              static unsigned char i; 
+ 102   1              switch (SMB0STA) {
+ 103   2                      case SMB_START:                                 
+ 104   2                      case SMB_RP_START:                      
+ 105   2                              SMB0DAT = smb_buf[0]; 
+ 106   2                              STA = 0;                                                        
+ 107   2                              i = 0;                                                          
+ 108   2                              break;
+ 109   2                      case SMB_MTADDACK:                                              
+ 110   2                              SMB0DAT = smb_buf[1];                   
+ 111   2                              break;
+ 112   2                      case SMB_MTDBACK:                                               
+ 113   2                              if (i < smb_len){
+ 114   3                                      SMB0DAT = smb_buf[2 + i]; 
+ 115   3                                      i++; 
+ 116   3                              } 
+ 117   2                              else{
+C51 COMPILER V9.01   DISPLAY_CLOCK                                                         04/25/2017 19:09:10 PAGE 3   
+
+ 118   3                                      result = S_OVER;        
+ 119   3                                      STO = 1;                                        
+ 120   3                              }
+ 121   2                              break;
+ 122   2                      case SMB_MRADDACK:              
+ 123   2                              if (smb_len == 1)       
+ 124   2                                      AA = 0;                                         
+ 125   2                              else
+ 126   2                                      AA = 1;                                         
+ 127   2                              break;
+ 128   2                      case SMB_MRDBACK:               
+ 129   2                              if (i < smb_len){
+ 130   3                                      smb_buf[i + 1] = SMB0DAT; 
+ 131   3                                      i++; 
+ 132   3                                      AA = 1; 
+ 133   3                              }
+ 134   2                              if (i >= smb_len) 
+ 135   2                                      AA = 0; 
+ 136   2                              break;
+ 137   2                      case SMB_MRDBNACK: 
+ 138   2                              smb_buf[i + 1] = SMB0DAT; 
+ 139   2                              STO = 1; 
+ 140   2                              AA = 1;         
+ 141   2                              result = R_OVER; 
+ 142   2                              break;
+ 143   2                      case SMB_MTADDNACK:
+ 144   2                      case SMB_MTDBNACK: 
+ 145   2                      case SMB_MTARBLOST:
+ 146   2                      // Master Receiver: Slave address + READ transmitted. NACK received.
+ 147   2                      case SMB_MRADDNACK: 
+ 148   2                              FAIL = 1; 
+ 149   2                              break;
+ 150   2                      default:
+ 151   2                              FAIL = 1;
+ 152   2                              break;
+ 153   2              }
+ 154   1              if (FAIL){
+ 155   2                      SMB0CN &= ~0x40; 
+ 156   2                      SMB0CN |= 0x40;
+ 157   2                      STA = 0;
+ 158   2                      STO = 0;
+ 159   2                      AA = 0;
+ 160   2                      result = SMB_FAIL; 
+ 161   2                      FAIL = 0;
+ 162   2              }
+ 163   1              SI = 0; 
+ 164   1      }
+ 165          
+ 166          
+ 167          void main()
+ 168          {
+ 169   1              int i;
+ 170   1              WDTCN=0xDE;
+ 171   1              WDTCN=0xAD;
+ 172   1              SYSCLK_Init();
+ 173   1              PORT_Init();
+ 174   1              UART0_Init();
+ 175   1              TI0 = 1;
+ 176   1              I2C_Init();
+ 177   1              SI = 0;                                                 
+ 178   1              EIE1 |= 0x02;                   
+ 179   1              EA = 1;                                                 
+C51 COMPILER V9.01   DISPLAY_CLOCK                                                         04/25/2017 19:09:10 PAGE 4   
+
+ 180   1              SMB_Transmit(0, 0); 
+ 181   1              SMB_Receive(1); 
+ 182   1              if (smb_buf[1] & 0x80) { 
+ 183   2                      unsigned char b = smb_buf[1];
+ 184   2                      smb_buf[2] = b & 0x7F; 
+ 185   2                      SMB_Transmit(0, 1); 
+ 186   2              }
+ 187   1              while(1) {
+ 188   2                      SMB_Transmit(0, 0);
+ 189   2                      SMB_Receive(8);  
+ 190   2                      Timer0_ms(500);
+ 191   2                      
+ 192   2                      // year-month-day hour:minute:second
+ 193   2                      printf("%02bx-%02bx-%02bx %02bx:%02bx:%02bx\r\n",
+ 194   2                                 smb_buf[7],smb_buf[6],smb_buf[5],smb_buf[3],smb_buf[2],smb_buf[1]);
+ 195   2              }
+ 196   1      }
+*** WARNING C280 IN LINE 169 OF DISPLAY_CLOCK.C: 'i': unreferenced local variable
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    531    ----
+   CONSTANT SIZE    =     38    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     23      11
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----       1
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)
