@@ -1,0 +1,345 @@
+C51 COMPILER V9.01   CALCULATOR                                                            05/09/2017 20:41:39 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE CALCULATOR
+OBJECT MODULE PLACED IN Calculator.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE Calculator.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include <c8051f020.h>
+   2          #include <stdio.h>
+   3          #define SYSCLK 22118400
+   4          #define DELAY_LCD 1000
+   5          #define NOKEY 255
+   6          #define CLR 15
+   7          
+   8          typedef unsigned char uchar;
+   9          // Last one Serves as Backspace
+  10          const char code numgram[]={'0','1','2','3','4','5','6','7','8','9','+','-','*','/','=',' '};
+  11          uchar row1[16];
+  12          uchar row2[16];
+  13          int cnt;
+  14          
+  15          void SYSCLK_Init (void)
+  16          {
+  17   1              int i;
+  18   1              OSCXCN = 0x67; 
+  19   1              for (i=0; i < 256; i++); 
+  20   1              while (!(OSCXCN & 0x80)); 
+  21   1              OSCICN = 0x88; 
+  22   1      }
+  23          
+  24          void PORT_Init (void)
+  25          {
+  26   1              EMI0CF = 0x1F;  // 非复用总线，不使用内部 XRAM
+  27   1              XBR2 = 0x42;    // 使用 P0-P3 作为总线，允许XBR
+  28   1              P0MDOUT = 0xC0; // 设置总线相关端口为推挽输出 P0.6 和 P0.7
+  29   1              P1MDOUT = 0xFF; // 高位地址
+  30   1              P2MDOUT = 0xFF; // 低位地址
+  31   1              P3MDOUT = 0xFF; // 数据总线
+  32   1      }
+  33          
+  34          void Delay(int num)
+  35          {
+  36   1              int i;
+  37   1              for(i=0;i<num;i++);
+  38   1              return;
+  39   1      }
+  40          
+  41          char isLcdBusy(void)
+  42          {
+  43   1              P5 = 0xFF;      // 设置 P5 为输入模式
+  44   1              P6 = 0x82;      // RS=0, RW=1, EN=0
+  45   1              Delay(DELAY_LCD); 
+  46   1              P6 = 0x83;      // RS=0, RW=1, EN=1
+  47   1              Delay(DELAY_LCD);
+  48   1              return (P5 & 0x80);   // 返回忙状态
+  49   1      }
+  50          
+  51          // Write the control command
+  52          void Lcd1602_Write_Command(unsigned char Command)
+  53          {
+  54   1              while(isLcdBusy());
+  55   1              P5 = Command;           // command to be written
+C51 COMPILER V9.01   CALCULATOR                                                            05/09/2017 20:41:39 PAGE 2   
+
+  56   1              P6 = 0x80;                      // RS=0, RW=0, EN=0
+  57   1              Delay(DELAY_LCD);       // delay
+  58   1              P6 = 0x81;                      // RS=0, RW=0, EN=1
+  59   1              Delay(DELAY_LCD);
+  60   1              P6 = 0x80;                      // RS=0, RW=0, EN=0
+  61   1      }
+  62          
+  63          // Write the "Data" into the specific place (row,column)
+  64          void Lcd1602_Write_Data(Data)
+  65          {
+  66   1              P5 = Data;              // data to be writen
+  67   1              P6 = 0x84;              // RS=1, RW=0, EN=0
+  68   1              Delay(DELAY_LCD);
+  69   1              P6 = 0x85;              // RS=1, RW=0, EN=1
+  70   1              Delay(DELAY_LCD);
+  71   1              P6 = 0x84;              // RS=1, RW=0, EN=0
+  72   1      }
+  73          
+  74          void Lcd1602_WriteXY_Data(uchar row, uchar column, uchar Data)
+  75          {
+  76   1              while(isLcdBusy());
+  77   1              if (row == 1)
+  78   1                      column |= 0xC0;         // D7=1, offset address is 0x40
+  79   1              else
+  80   1                      column |= 0x80;         // D7=1
+  81   1              Lcd1602_Write_Command(column);  // set the address
+  82   1              Lcd1602_Write_Data(Data);                       // write the "Data"
+  83   1      }
+  84          
+  85          void Lcd1602_init(void)
+  86          {
+  87   1              Lcd1602_Write_Command(0x38);
+  88   1              Lcd1602_Write_Command(0x08);
+  89   1              Lcd1602_Write_Command(0x01);
+  90   1              Lcd1602_Write_Command(0x06);
+  91   1              Lcd1602_Write_Command(0x0C);
+  92   1              Lcd1602_Write_Command(0x80);
+  93   1              Lcd1602_Write_Command(0x02);
+  94   1      }
+  95          
+  96          uchar getkey()
+  97          {
+  98   1              uchar i;
+  99   1              uchar key;
+ 100   1              const uchar code dec[] = {0, 0, 1, 0, 2, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0};
+ 101   1              const uchar code trans[] = {0xC, 9, 5, 1, 0xD, 0, 6, 2, 0xE, 0xA, 7, 3, 0xF, 0xB, 8, 4};
+ 102   1      
+ 103   1              P4 = 0x0F;
+ 104   1              Delay(100);
+ 105   1              i = ~P4 & 0x0F;
+ 106   1              if(i == 0) return NOKEY;
+ 107   1              key = dec[i] * 4;
+ 108   1              Delay(1000);
+ 109   1              P4 = 0xF0;
+ 110   1              Delay(100);
+ 111   1              i = ~P4;
+ 112   1              i >>= 4;
+ 113   1              if(i == 0) return NOKEY;
+ 114   1              key = key + dec[i];
+ 115   1              key = trans[key];
+ 116   1              return key;
+ 117   1      }
+C51 COMPILER V9.01   CALCULATOR                                                            05/09/2017 20:41:39 PAGE 3   
+
+ 118          
+ 119          void TIMER0_ISR (void) interrupt 1        // 利用时钟中断刷新显示屏
+ 120          {
+ 121   1              int i;
+ 122   1              cnt++;
+ 123   1              if(cnt == 500){         // 刷新第一行为row1当前内容
+ 124   2                      Lcd1602_Write_Command(0x80);
+ 125   2                      for(i=0;i<16;i++)
+ 126   2                              Lcd1602_Write_Data(numgram[row1[i]]);
+ 127   2              }
+ 128   1              else if(cnt == 1000){     // 刷新第二行为row2当前内容
+ 129   2              // 用中断刷新要注意这里两个刷新时间不能差得太小，否则因刷新所用的时间还是蛮长的，很可能第一行可以刷新，而
+             -第二行要刷新时第一行还没刷新完成因此刷新失败
+ 130   2                      Lcd1602_Write_Command(0xC0);
+ 131   2                      for(i=0;i<16;i++)
+ 132   2                              Lcd1602_Write_Data(numgram[row2[15-i]]);
+ 133   2              }
+ 134   1              if(cnt > 1100){ // 刷新时间需要满足row2要求
+ 135   2                      cnt = 0;        // 刷新结束置0
+ 136   2              }
+ 137   1      }
+ 138          
+ 139          int change_to_int(char *c, int length){ //  change char* into int*
+ 140   1              int i, flag=0;
+ 141   1              int sum = 0;
+ 142   1              if(c[0] == 0xB) flag = 1;
+ 143   1              for(i=0;i<length;i++){
+ 144   2                      if(flag && !i) continue;
+ 145   2                      sum = sum*10 + (int)(c[i]);
+ 146   2              }
+ 147   1              if(flag) sum = -sum;
+ 148   1              return sum;
+ 149   1      }
+ 150          
+ 151          void change_ans_to_char(long int a){            // 变为字符串，直接存到显示集row2内
+ 152   1              int i = 0;
+ 153   1              long int tmp = a;
+ 154   1              bit minus = 0;   // 判断负数
+ 155   1              if(a < 0){
+ 156   2                      minus = 1;
+ 157   2                      tmp = -a;
+ 158   2              }
+ 159   1              if(tmp == 0){
+ 160   2                      row2[0] = 0;
+ 161   2                      return;
+ 162   2              }
+ 163   1              while(tmp != 0){
+ 164   2                      row2[i] = tmp%10;
+ 165   2                      i++;
+ 166   2                      tmp /= 10;
+ 167   2              }
+ 168   1              if(minus)
+ 169   1                      row2[i] = 0xB;  // 0xB == '-'
+ 170   1      }
+ 171          
+ 172          void init()             // initiate two operater numbers
+ 173          {
+ 174   1              int i;
+ 175   1              for(i=0;i<16;i++){
+ 176   2                      row1[i] = CLR;
+ 177   2                      row2[i] = CLR;
+ 178   2              }
+C51 COMPILER V9.01   CALCULATOR                                                            05/09/2017 20:41:39 PAGE 4   
+
+ 179   1      }
+ 180          
+ 181          void main(void)
+ 182          {         
+ 183   1              //int i;
+ 184   1              int j = 0; 
+ 185   1              bit operator_input = 0;
+ 186   1              uchar temp;
+ 187   1              uchar ctrl;
+ 188   1              int curplace = 0;
+ 189   1              uchar input_num1[10];   // 操作数1
+ 190   1              uchar input_num2[10];   // 操作数2
+ 191   1              uchar op;                               // 操作符号
+ 192   1              long int num[3] = {0};
+ 193   1              int len1 = 0;
+ 194   1              int len2 = 0;
+ 195   1              long int answer = 0;
+ 196   1              bit complete = 0;       // 代表之前运算是否完成，变化标志分别是'='和新操作数的输入      
+ 197   1              ctrl = NOKEY;
+ 198   1              temp = NOKEY;
+ 199   1              //bit judgeneg = 0;     // 判断是否输入负数
+ 200   1      
+ 201   1              WDTCN = 0xde;
+ 202   1              WDTCN = 0xad; // Stop Watch-dog
+ 203   1              SYSCLK_Init();
+ 204   1              PORT_Init();
+ 205   1              P74OUT = 0x30; // P6 out
+ 206   1              EA = 1;
+ 207   1              TMOD |= 0x02;
+ 208   1              TH0 = 0x00;
+ 209   1              TL0 = 0x00;
+ 210   1              TR0 = 1;
+ 211   1              ET0 = 1;
+ 212   1              Lcd1602_init();
+ 213   1              Lcd1602_Write_Command(0x01);
+ 214   1              
+ 215   1              init();         // initiate
+ 216   1              while(1){
+ 217   2                      while(ctrl == temp)    // 去掉重复的按键
+ 218   2                              ctrl = getkey();
+ 219   2                      temp = ctrl;
+ 220   2                      
+ 221   2                      if(complete == 1 && ctrl != NOKEY){ // 当有新数据输入时，重新初始化相关参数和显示屏
+ 222   3                              complete = 0;
+ 223   3                              curplace = 0;
+ 224   3      
+ 225   3                              init();    // clear the data
+ 226   3                              len1 = 0;
+ 227   3                              len2 = 0;
+ 228   3                              j = 0;
+ 229   3                              operator_input = 0;
+ 230   3                      }
+ 231   2              
+ 232   2                      if(ctrl < 0xE){  // 如果不是等号或退格，在第一行直接输出显示按键对应的字符
+ 233   3                              row1[curplace++] = ctrl;
+ 234   3                              if(ctrl > 0x9){
+ 235   4                                      if(ctrl == 0xB && !len1){ // 输入第一个数为负数
+ 236   5                                              len1++;
+ 237   5                                              input_num1[j++] = ctrl;
+ 238   5                                              continue;
+ 239   5                                      }
+ 240   4                                      if(ctrl == 0xB && !len2 && operator_input){ // 输入第二个数为负数
+C51 COMPILER V9.01   CALCULATOR                                                            05/09/2017 20:41:39 PAGE 5   
+
+ 241   5                                              len2++;
+ 242   5                                              input_num2[j++] = ctrl;
+ 243   5                                              continue;
+ 244   5                                      }
+ 245   4                                      op = ctrl;
+ 246   4                                      operator_input = 1;
+ 247   4                                      j = 0;
+ 248   4                              }
+ 249   3                              else{
+ 250   4                                      if(operator_input){
+ 251   5                                              len2++;
+ 252   5                                              input_num2[j++] = ctrl;
+ 253   5                                      }
+ 254   4                                      else{
+ 255   5                                              len1++;
+ 256   5                                              input_num1[j++] = ctrl;
+ 257   5                                      }
+ 258   4                              }
+ 259   3                      }
+ 260   2                      else if(ctrl == 0xF){   // Backspace
+ 261   3                              if(curplace > 0){
+ 262   4                                      row1[--curplace] = ctrl;
+ 263   4                                      if(operator_input){
+ 264   5                                              if(j != 0){
+ 265   6                                                      if(len2 > 0){    
+ 266   7                                                              input_num2[--j] = ' ';
+ 267   7                                                              len2--; 
+ 268   7                                                      }
+ 269   6                                              }
+ 270   5                                              else{   // Delete operator
+ 271   6                                                      operator_input = 0;
+ 272   6                                                      j = len1;
+ 273   6                                              }
+ 274   5                                      }
+ 275   4                                      else{
+ 276   5                                              if(len1 > 0){
+ 277   6                                                      input_num1[--j] = ' ';
+ 278   6                                                      len1--;
+ 279   6                                              }
+ 280   5                                      }
+ 281   4                              }
+ 282   3                      }
+ 283   2                      // 注意到当只输入一个数按下等号，显示的应该是这个数本身
+ 284   2                      else if(ctrl == 0xE){   // operator '='
+ 285   3                              j = 0;
+ 286   3                              if(operator_input == 0) op = 0;  // only num[1]
+ 287   3                              num[1] = change_to_int(input_num1,len1);        // change to int*
+ 288   3                              num[2] = change_to_int(input_num2,len2);
+ 289   3      
+ 290   3                              switch(op){
+ 291   4                                      case 0xA:
+ 292   4                                              answer = num[1] + num[2];
+ 293   4                                              break;
+ 294   4                                      case 0xB:
+ 295   4                                              answer = num[1] - num[2];
+ 296   4                                              break;
+ 297   4                                      case 0xC:
+ 298   4                                              answer = num[1] * num[2];
+ 299   4                                              break;
+ 300   4                                      case 0xD:
+ 301   4                                              answer = num[1] / num[2];
+ 302   4                                              break;
+C51 COMPILER V9.01   CALCULATOR                                                            05/09/2017 20:41:39 PAGE 6   
+
+ 303   4                                      default:
+ 304   4                                              answer = num[1];
+ 305   4                                              break;
+ 306   4                              }
+ 307   3                              change_ans_to_char(answer);
+ 308   3                              complete = 1;   // 下一次按键时清空显示的内容
+ 309   3                      }
+ 310   2              }
+ 311   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1410    ----
+   CONSTANT SIZE    =     60    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     34      70
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----       3
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

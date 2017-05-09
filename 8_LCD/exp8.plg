@@ -1,0 +1,277 @@
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Project:</h2>
+D:\STUDENT\exp8\exp8.uvproj
+Project File Date:  05/09/2017
+
+<h2>Output:</h2>
+Build target 'Target 1'
+compiling CGRAM.c...
+CGRAM.C(75): warning C290: missing return value
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD1602_WRITEXY_DATA?CGRAM
+Program Size: data=9.0 xdata=0 code=306
+"exp8" - 0 Error(s), 2 Warning(s).
+Build target 'Target 1'
+compiling CGRAM.c...
+CGRAM.C(81): warning C280: 'j': unreferenced local variable
+CGRAM.C(77): warning C290: missing return value
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD1602_WRITEXY_DATA?CGRAM
+Program Size: data=10.0 xdata=0 code=264
+"exp8" - 0 Error(s), 3 Warning(s).
+Build target 'Target 1'
+compiling CGRAM.c...
+CGRAM.C(81): warning C280: 'j': unreferenced local variable
+CGRAM.C(77): warning C290: missing return value
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD1602_WRITEXY_DATA?CGRAM
+Program Size: data=10.0 xdata=0 code=264
+"exp8" - 0 Error(s), 3 Warning(s).
+Build target 'Target 1'
+compiling CGRAM.c...
+CGRAM.C(81): warning C280: 'j': unreferenced local variable
+CGRAM.C(77): warning C290: missing return value
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD1602_WRITEXY_DATA?CGRAM
+Program Size: data=10.0 xdata=0 code=264
+"exp8" - 0 Error(s), 3 Warning(s).
+Build target 'Target 1'
+compiling CGRAM.c...
+CGRAM.C(75): warning C290: missing return value
+compiling Calculator.c...
+CALCULATOR.C(180): warning C280: 'i': unreferenced local variable
+linking...
+*** ERROR L104: MULTIPLE PUBLIC DEFINITIONS
+    SYMBOL:  MAIN
+    MODULE:  Calculator.obj (CALCULATOR)
+*** ERROR L104: MULTIPLE PUBLIC DEFINITIONS
+    SYMBOL:  LCD1602_INIT
+    MODULE:  Calculator.obj (CALCULATOR)
+*** ERROR L104: MULTIPLE PUBLIC DEFINITIONS
+    SYMBOL:  _LCD1602_WRITEXY_DATA
+    MODULE:  Calculator.obj (CALCULATOR)
+*** ERROR L104: MULTIPLE PUBLIC DEFINITIONS
+    SYMBOL:  _LCD1602_WRITE_DATA
+    MODULE:  Calculator.obj (CALCULATOR)
+*** ERROR L104: MULTIPLE PUBLIC DEFINITIONS
+    SYMBOL:  _LCD1602_WRITE_COMMAND
+    MODULE:  Calculator.obj (CALCULATOR)
+*** ERROR L104: MULTIPLE PUBLIC DEFINITIONS
+    SYMBOL:  ISLCDBUSY
+    MODULE:  Calculator.obj (CALCULATOR)
+*** ERROR L104: MULTIPLE PUBLIC DEFINITIONS
+    SYMBOL:  _DELAY
+    MODULE:  Calculator.obj (CALCULATOR)
+*** ERROR L104: MULTIPLE PUBLIC DEFINITIONS
+    SYMBOL:  SYSCLK_INIT
+    MODULE:  Calculator.obj (CALCULATOR)
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD1602_WRITEXY_DATA?CGRAM
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD1602_WRITEXY_DATA?CALCULATOR
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?MAIN?CALCULATOR
+Program Size: data=97.3 xdata=0 code=1831
+Target not created
+Build target 'Target 1'
+linking...
+*** ERROR L104: MULTIPLE PUBLIC DEFINITIONS
+    SYMBOL:  MAIN
+    MODULE:  Calculator.obj (CALCULATOR)
+*** ERROR L104: MULTIPLE PUBLIC DEFINITIONS
+    SYMBOL:  LCD1602_INIT
+    MODULE:  Calculator.obj (CALCULATOR)
+*** ERROR L104: MULTIPLE PUBLIC DEFINITIONS
+    SYMBOL:  _LCD1602_WRITEXY_DATA
+    MODULE:  Calculator.obj (CALCULATOR)
+*** ERROR L104: MULTIPLE PUBLIC DEFINITIONS
+    SYMBOL:  _LCD1602_WRITE_DATA
+    MODULE:  Calculator.obj (CALCULATOR)
+*** ERROR L104: MULTIPLE PUBLIC DEFINITIONS
+    SYMBOL:  _LCD1602_WRITE_COMMAND
+    MODULE:  Calculator.obj (CALCULATOR)
+*** ERROR L104: MULTIPLE PUBLIC DEFINITIONS
+    SYMBOL:  ISLCDBUSY
+    MODULE:  Calculator.obj (CALCULATOR)
+*** ERROR L104: MULTIPLE PUBLIC DEFINITIONS
+    SYMBOL:  _DELAY
+    MODULE:  Calculator.obj (CALCULATOR)
+*** ERROR L104: MULTIPLE PUBLIC DEFINITIONS
+    SYMBOL:  SYSCLK_INIT
+    MODULE:  Calculator.obj (CALCULATOR)
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD1602_WRITEXY_DATA?CGRAM
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD1602_WRITEXY_DATA?CALCULATOR
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?MAIN?CALCULATOR
+Program Size: data=97.3 xdata=0 code=1831
+Target not created
+Build target 'Target 1'
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD1602_WRITEXY_DATA?CALCULATOR
+Program Size: data=95.3 xdata=0 code=1540
+"exp8" - 0 Error(s), 1 Warning(s).
+Build target 'Target 1'
+compiling Calculator.c...
+CALCULATOR.C(180): warning C280: 'i': unreferenced local variable
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD1602_WRITEXY_DATA?CALCULATOR
+Program Size: data=95.3 xdata=0 code=1540
+"exp8" - 0 Error(s), 2 Warning(s).
+Build target 'Target 1'
+compiling Calculator.c...
+CALCULATOR.C(180): warning C280: 'i': unreferenced local variable
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD1602_WRITEXY_DATA?CALCULATOR
+Program Size: data=95.3 xdata=0 code=1278
+"exp8" - 0 Error(s), 2 Warning(s).
+Build target 'Target 1'
+compiling Calculator.c...
+CALCULATOR.C(180): warning C280: 'i': unreferenced local variable
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD1602_WRITEXY_DATA?CALCULATOR
+Program Size: data=95.3 xdata=0 code=1419
+"exp8" - 0 Error(s), 2 Warning(s).
+Build target 'Target 1'
+compiling Calculator.c...
+CALCULATOR.C(180): warning C280: 'i': unreferenced local variable
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD1602_WRITEXY_DATA?CALCULATOR
+Program Size: data=95.3 xdata=0 code=1419
+"exp8" - 0 Error(s), 2 Warning(s).
+Build target 'Target 1'
+compiling Calculator.c...
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD1602_WRITEXY_DATA?CALCULATOR
+Program Size: data=93.3 xdata=0 code=1419
+"exp8" - 0 Error(s), 1 Warning(s).
+Build target 'Target 1'
+compiling Calculator.c...
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD1602_WRITEXY_DATA?CALCULATOR
+Program Size: data=93.3 xdata=0 code=1427
+"exp8" - 0 Error(s), 1 Warning(s).
+Build target 'Target 1'
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD1602_WRITEXY_DATA?CALCULATOR
+Program Size: data=93.3 xdata=0 code=1427
+"exp8" - 0 Error(s), 1 Warning(s).
+compiling Calculator.c...
+Calculator.c - 0 Error(s), 0 Warning(s).
+Build target 'Target 1'
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD1602_WRITEXY_DATA?CALCULATOR
+Program Size: data=93.3 xdata=0 code=1689
+"exp8" - 0 Error(s), 1 Warning(s).
+Build target 'Target 1'
+compiling Calculator.c...
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD1602_WRITEXY_DATA?CALCULATOR
+Program Size: data=93.3 xdata=0 code=1703
+"exp8" - 0 Error(s), 1 Warning(s).
+Build target 'Target 1'
+compiling Calculator.c...
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD1602_WRITEXY_DATA?CALCULATOR
+Program Size: data=93.3 xdata=0 code=1697
+"exp8" - 0 Error(s), 1 Warning(s).
+Build target 'Target 1'
+compiling Calculator.c...
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD1602_WRITEXY_DATA?CALCULATOR
+Program Size: data=93.3 xdata=0 code=1703
+"exp8" - 0 Error(s), 1 Warning(s).
+Build target 'Target 1'
+compiling Calculator.c...
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD1602_WRITEXY_DATA?CALCULATOR
+Program Size: data=93.3 xdata=0 code=1703
+"exp8" - 0 Error(s), 1 Warning(s).
+Build target 'Target 1'
+compiling Calculator.c...
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD1602_WRITEXY_DATA?CALCULATOR
+Program Size: data=101.3 xdata=0 code=2132
+"exp8" - 0 Error(s), 1 Warning(s).
+Build target 'Target 1'
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD1602_WRITEXY_DATA?CALCULATOR
+Program Size: data=101.3 xdata=0 code=2132
+"exp8" - 0 Error(s), 1 Warning(s).
+Build target 'Target 1'
+compiling Calculator.c...
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD1602_WRITEXY_DATA?CALCULATOR
+Program Size: data=102.3 xdata=0 code=2053
+"exp8" - 0 Error(s), 1 Warning(s).
+Build target 'Target 1'
+compiling Calculator.c...
+CALCULATOR.C(196): error C141: syntax error near 'bit'
+CALCULATOR.C(196): error C202: 'judgeneg': undefined identifier
+Target not created
+Build target 'Target 1'
+compiling Calculator.c...
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD1602_WRITEXY_DATA?CALCULATOR
+Program Size: data=102.3 xdata=0 code=2126
+"exp8" - 0 Error(s), 1 Warning(s).
+Build target 'Target 1'
+compiling Calculator.c...
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD1602_WRITEXY_DATA?CALCULATOR
+Program Size: data=102.3 xdata=0 code=2118
+"exp8" - 0 Error(s), 1 Warning(s).
+Build target 'Target 1'
+compiling Calculator.c...
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD1602_WRITEXY_DATA?CALCULATOR
+Program Size: data=102.3 xdata=0 code=2118
+"exp8" - 0 Error(s), 1 Warning(s).
+Build target 'Target 1'
+compiling Calculator.c...
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD1602_WRITEXY_DATA?CALCULATOR
+Program Size: data=102.3 xdata=0 code=2118
+"exp8" - 0 Error(s), 1 Warning(s).
+Build target 'Target 1'
+compiling Calculator.c...
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD1602_WRITEXY_DATA?CALCULATOR
+Program Size: data=103.3 xdata=0 code=2183
+"exp8" - 0 Error(s), 1 Warning(s).
+Build target 'Target 1'
+compiling Calculator.c...
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_LCD1602_WRITEXY_DATA?CALCULATOR
+Program Size: data=103.3 xdata=0 code=2189
+"exp8" - 0 Error(s), 1 Warning(s).
