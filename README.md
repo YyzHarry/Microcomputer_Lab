@@ -15,10 +15,10 @@ Implemented mostly by __C51__, some by __Assembly__.
 7. I2C Bus.
 8. Character-type LCD Module.
 
-These are all of the Module Experiment.
+These are all of the __Module Experiment__.
 
 ## Comprehensive Experiment
-__Coming Soon. Not Complete Yet.__
+__Coming Soon.__ Not Complete Yet.
 
 ## Environment
 Locally tested by ___Keil___. ___C8051F020___ is the chip we use.
