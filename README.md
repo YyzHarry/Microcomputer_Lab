@@ -13,9 +13,12 @@ Implemented mostly by __C51__, some by __Assembly__.
 5. Serial.
 6. SPI Bus.
 7. I2C Bus.
-8. ___Coming soon___.
+8. Character-type LCD Module.
 
-Note: Not Complete Yet.
+These are all of the Module Experiment.
+
+## Comprehensive Experiment
+__Coming Soon. Not Complete Yet.__
 
 ## Environment
 Locally tested by ___Keil___. ___C8051F020___ is the chip we use.
