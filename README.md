@@ -17,8 +17,10 @@ Implemented mostly by __C51__, some by __Assembly__.
 
 These are all of the __Module Experiment__.
 
-## Comprehensive Experiment
-__Coming Soon.__ Not Complete Yet.
+## Final Project
+The first version is uploaded.
+
+__Not Complete Yet.__
 
 ## Environment
 Locally tested by ___Keil___. ___C8051F020___ is the chip we use.
