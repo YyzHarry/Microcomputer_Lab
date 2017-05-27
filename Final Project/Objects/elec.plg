@@ -1,0 +1,424 @@
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Project:</h2>
+C:\Documents and Settings\Administrator\×ÀÃæ\Microcomputer_Project\elec.uvproj
+Project File Date:  05/23/2017
+
+<h2>Output:</h2>
+Build target 'Target 1'
+compiling Record_in.c...
+RECORD_IN.C(112): warning C206: 'SPI0_Init': missing function-prototype
+RECORD_IN.C(133): warning C206: 'Timer0_us': missing function-prototype
+RECORD_IN.C(133): error C267: 'Timer0_us': requires ANSI-style prototype
+Target not created
+Build target 'Target 1'
+compiling Record_in.c...
+RECORD_IN.C(130): warning C280: 'j': unreferenced local variable
+RECORD_IN.C(131): warning C280: 'c': unreferenced local variable
+RECORD_IN.C(131): warning C280: 'v': unreferenced local variable
+linking...
+Program Size: data=25.0 xdata=32768 code=672
+"elec" - 0 Error(s), 3 Warning(s).
+Build target 'Target 1'
+linking...
+Program Size: data=25.0 xdata=32768 code=672
+"elec" - 0 Error(s), 0 Warning(s).
+Build target 'Target 1'
+compiling Record_try.c...
+linking...
+Program Size: data=13.0 xdata=32768 code=363
+"elec" - 0 Error(s), 0 Warning(s).
+Build target 'Target 1'
+compiling Record_in.c...
+RECORD_IN.C(130): warning C280: 'j': unreferenced local variable
+RECORD_IN.C(131): warning C280: 'c': unreferenced local variable
+RECORD_IN.C(131): warning C280: 'v': unreferenced local variable
+linking...
+Program Size: data=25.0 xdata=32768 code=674
+"elec" - 0 Error(s), 3 Warning(s).
+Build target 'Target 1'
+linking...
+Program Size: data=25.0 xdata=32768 code=674
+"elec" - 0 Error(s), 0 Warning(s).
+Build target 'Target 1'
+compiling Record_in.c...
+RECORD_IN.C(130): warning C280: 'j': unreferenced local variable
+RECORD_IN.C(131): warning C280: 'c': unreferenced local variable
+RECORD_IN.C(131): warning C280: 'v': unreferenced local variable
+linking...
+Program Size: data=25.0 xdata=32768 code=672
+"elec" - 0 Error(s), 3 Warning(s).
+Build target 'Target 1'
+linking...
+Program Size: data=25.0 xdata=32768 code=672
+"elec" - 0 Error(s), 0 Warning(s).
+Build target 'Target 1'
+compiling Record_in.c...
+RECORD_IN.C(130): warning C280: 'i': unreferenced local variable
+RECORD_IN.C(130): warning C280: 'j': unreferenced local variable
+RECORD_IN.C(131): warning C280: 'c': unreferenced local variable
+RECORD_IN.C(131): warning C280: 'v': unreferenced local variable
+RECORD_IN.C(131): warning C280: 'v1': unreferenced local variable
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?BUSYWAIT?RECORD_IN
+Program Size: data=25.0 xdata=32768 code=483
+"elec" - 0 Error(s), 6 Warning(s).
+Build target 'Target 1'
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?BUSYWAIT?RECORD_IN
+Program Size: data=25.0 xdata=32768 code=483
+"elec" - 0 Error(s), 1 Warning(s).
+Build target 'Target 1'
+compiling Record_in.c...
+RECORD_IN.C(130): warning C280: 'j': unreferenced local variable
+RECORD_IN.C(131): warning C280: 'c': unreferenced local variable
+RECORD_IN.C(131): warning C280: 'v': unreferenced local variable
+linking...
+Program Size: data=25.0 xdata=32768 code=672
+"elec" - 0 Error(s), 3 Warning(s).
+Build target 'Target 1'
+compiling Record_in.c...
+RECORD_IN.C(138): warning C280: 'j': unreferenced local variable
+RECORD_IN.C(139): warning C280: 'c': unreferenced local variable
+RECORD_IN.C(139): warning C280: 'v': unreferenced local variable
+linking...
+Program Size: data=25.0 xdata=32768 code=691
+"elec" - 0 Error(s), 3 Warning(s).
+Build target 'Target 1'
+linking...
+Program Size: data=25.0 xdata=32768 code=691
+"elec" - 0 Error(s), 0 Warning(s).
+Build target 'Target 1'
+compiling Record_in.c...
+RECORD_IN.C(138): warning C280: 'j': unreferenced local variable
+RECORD_IN.C(139): warning C280: 'c': unreferenced local variable
+RECORD_IN.C(139): warning C280: 'v': unreferenced local variable
+linking...
+Program Size: data=25.0 xdata=32768 code=694
+"elec" - 0 Error(s), 3 Warning(s).
+Build target 'Target 1'
+compiling Record_in.c...
+RECORD_IN.C(141): warning C206: 'PORT_Init_1': missing function-prototype
+RECORD_IN.C(142): warning C206: 'PORT_Init_2': missing function-prototype
+RECORD_IN.C(133): warning C280: 'j': unreferenced local variable
+RECORD_IN.C(134): warning C280: 'c': unreferenced local variable
+RECORD_IN.C(134): warning C280: 'v': unreferenced local variable
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?PORT_INIT?RECORD_IN
+*** WARNING L1: UNRESOLVED EXTERNAL SYMBOL
+    SYMBOL:  PORT_INIT_1
+    MODULE:  Record_in.obj (RECORD_IN)
+*** WARNING L1: UNRESOLVED EXTERNAL SYMBOL
+    SYMBOL:  PORT_INIT_2
+    MODULE:  Record_in.obj (RECORD_IN)
+*** WARNING L2: REFERENCE MADE TO UNRESOLVED EXTERNAL
+    SYMBOL:  PORT_INIT_1
+    MODULE:  Record_in.obj (RECORD_IN)
+    ADDRESS: 009AH
+*** WARNING L2: REFERENCE MADE TO UNRESOLVED EXTERNAL
+    SYMBOL:  PORT_INIT_2
+    MODULE:  Record_in.obj (RECORD_IN)
+    ADDRESS: 009DH
+Program Size: data=25.0 xdata=32768 code=686
+"elec" - 0 Error(s), 10 Warning(s).
+Build target 'Target 1'
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?PORT_INIT?RECORD_IN
+*** WARNING L1: UNRESOLVED EXTERNAL SYMBOL
+    SYMBOL:  PORT_INIT_1
+    MODULE:  Record_in.obj (RECORD_IN)
+*** WARNING L1: UNRESOLVED EXTERNAL SYMBOL
+    SYMBOL:  PORT_INIT_2
+    MODULE:  Record_in.obj (RECORD_IN)
+*** WARNING L2: REFERENCE MADE TO UNRESOLVED EXTERNAL
+    SYMBOL:  PORT_INIT_1
+    MODULE:  Record_in.obj (RECORD_IN)
+    ADDRESS: 009AH
+*** WARNING L2: REFERENCE MADE TO UNRESOLVED EXTERNAL
+    SYMBOL:  PORT_INIT_2
+    MODULE:  Record_in.obj (RECORD_IN)
+    ADDRESS: 009DH
+Program Size: data=25.0 xdata=32768 code=686
+"elec" - 0 Error(s), 5 Warning(s).
+Build target 'Target 1'
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?PORT_INIT?RECORD_IN
+*** WARNING L1: UNRESOLVED EXTERNAL SYMBOL
+    SYMBOL:  PORT_INIT_1
+    MODULE:  Record_in.obj (RECORD_IN)
+*** WARNING L1: UNRESOLVED EXTERNAL SYMBOL
+    SYMBOL:  PORT_INIT_2
+    MODULE:  Record_in.obj (RECORD_IN)
+*** WARNING L2: REFERENCE MADE TO UNRESOLVED EXTERNAL
+    SYMBOL:  PORT_INIT_1
+    MODULE:  Record_in.obj (RECORD_IN)
+    ADDRESS: 009AH
+*** WARNING L2: REFERENCE MADE TO UNRESOLVED EXTERNAL
+    SYMBOL:  PORT_INIT_2
+    MODULE:  Record_in.obj (RECORD_IN)
+    ADDRESS: 009DH
+Program Size: data=25.0 xdata=32768 code=686
+"elec" - 0 Error(s), 5 Warning(s).
+Build target 'Target 1'
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?PORT_INIT?RECORD_IN
+*** WARNING L1: UNRESOLVED EXTERNAL SYMBOL
+    SYMBOL:  PORT_INIT_1
+    MODULE:  Record_in.obj (RECORD_IN)
+*** WARNING L1: UNRESOLVED EXTERNAL SYMBOL
+    SYMBOL:  PORT_INIT_2
+    MODULE:  Record_in.obj (RECORD_IN)
+*** WARNING L2: REFERENCE MADE TO UNRESOLVED EXTERNAL
+    SYMBOL:  PORT_INIT_1
+    MODULE:  Record_in.obj (RECORD_IN)
+    ADDRESS: 009AH
+*** WARNING L2: REFERENCE MADE TO UNRESOLVED EXTERNAL
+    SYMBOL:  PORT_INIT_2
+    MODULE:  Record_in.obj (RECORD_IN)
+    ADDRESS: 009DH
+Program Size: data=25.0 xdata=32768 code=686
+"elec" - 0 Error(s), 5 Warning(s).
+Build target 'Target 1'
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?PORT_INIT?RECORD_IN
+*** WARNING L1: UNRESOLVED EXTERNAL SYMBOL
+    SYMBOL:  PORT_INIT_1
+    MODULE:  Record_in.obj (RECORD_IN)
+*** WARNING L1: UNRESOLVED EXTERNAL SYMBOL
+    SYMBOL:  PORT_INIT_2
+    MODULE:  Record_in.obj (RECORD_IN)
+*** WARNING L2: REFERENCE MADE TO UNRESOLVED EXTERNAL
+    SYMBOL:  PORT_INIT_1
+    MODULE:  Record_in.obj (RECORD_IN)
+    ADDRESS: 009AH
+*** WARNING L2: REFERENCE MADE TO UNRESOLVED EXTERNAL
+    SYMBOL:  PORT_INIT_2
+    MODULE:  Record_in.obj (RECORD_IN)
+    ADDRESS: 009DH
+Program Size: data=25.0 xdata=32768 code=686
+"elec" - 0 Error(s), 5 Warning(s).
+Build target 'Target 1'
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?PORT_INIT?RECORD_IN
+*** WARNING L1: UNRESOLVED EXTERNAL SYMBOL
+    SYMBOL:  PORT_INIT_1
+    MODULE:  Record_in.obj (RECORD_IN)
+*** WARNING L1: UNRESOLVED EXTERNAL SYMBOL
+    SYMBOL:  PORT_INIT_2
+    MODULE:  Record_in.obj (RECORD_IN)
+*** WARNING L2: REFERENCE MADE TO UNRESOLVED EXTERNAL
+    SYMBOL:  PORT_INIT_1
+    MODULE:  Record_in.obj (RECORD_IN)
+    ADDRESS: 009AH
+*** WARNING L2: REFERENCE MADE TO UNRESOLVED EXTERNAL
+    SYMBOL:  PORT_INIT_2
+    MODULE:  Record_in.obj (RECORD_IN)
+    ADDRESS: 009DH
+Program Size: data=25.0 xdata=32768 code=686
+"elec" - 0 Error(s), 5 Warning(s).
+Build target 'Target 1'
+compiling Record_in.c...
+RECORD_IN.C(141): warning C206: 'PORT_Init_1': missing function-prototype
+RECORD_IN.C(142): warning C206: 'PORT_Init_2': missing function-prototype
+RECORD_IN.C(133): warning C280: 'i': unreferenced local variable
+RECORD_IN.C(133): warning C280: 'j': unreferenced local variable
+RECORD_IN.C(134): warning C280: 'c': unreferenced local variable
+RECORD_IN.C(134): warning C280: 'v': unreferenced local variable
+RECORD_IN.C(134): warning C280: 'v1': unreferenced local variable
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?PORT_INIT?RECORD_IN
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?BUSYWAIT?RECORD_IN
+*** WARNING L1: UNRESOLVED EXTERNAL SYMBOL
+    SYMBOL:  PORT_INIT_1
+    MODULE:  Record_in.obj (RECORD_IN)
+*** WARNING L1: UNRESOLVED EXTERNAL SYMBOL
+    SYMBOL:  PORT_INIT_2
+    MODULE:  Record_in.obj (RECORD_IN)
+*** WARNING L2: REFERENCE MADE TO UNRESOLVED EXTERNAL
+    SYMBOL:  PORT_INIT_1
+    MODULE:  Record_in.obj (RECORD_IN)
+    ADDRESS: 0017H
+*** WARNING L2: REFERENCE MADE TO UNRESOLVED EXTERNAL
+    SYMBOL:  PORT_INIT_2
+    MODULE:  Record_in.obj (RECORD_IN)
+    ADDRESS: 001AH
+Program Size: data=25.0 xdata=32768 code=497
+"elec" - 0 Error(s), 13 Warning(s).
+Build target 'Target 1'
+compiling Record_in.c...
+RECORD_IN.C(133): warning C280: 'i': unreferenced local variable
+RECORD_IN.C(133): warning C280: 'j': unreferenced local variable
+RECORD_IN.C(134): warning C280: 'c': unreferenced local variable
+RECORD_IN.C(134): warning C280: 'v': unreferenced local variable
+RECORD_IN.C(134): warning C280: 'v1': unreferenced local variable
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?BUSYWAIT?RECORD_IN
+Program Size: data=25.0 xdata=32768 code=492
+"elec" - 0 Error(s), 6 Warning(s).
+Build target 'Target 1'
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?BUSYWAIT?RECORD_IN
+Program Size: data=25.0 xdata=32768 code=492
+"elec" - 0 Error(s), 1 Warning(s).
+Build target 'Target 1'
+compiling Record_in.c...
+RECORD_IN.C(133): warning C280: 'j': unreferenced local variable
+RECORD_IN.C(134): warning C280: 'c': unreferenced local variable
+RECORD_IN.C(134): warning C280: 'v': unreferenced local variable
+linking...
+Program Size: data=25.0 xdata=32768 code=681
+"elec" - 0 Error(s), 3 Warning(s).
+Build target 'Target 1'
+compiling Record_in.c...
+RECORD_IN.C(133): warning C280: 'j': unreferenced local variable
+RECORD_IN.C(134): warning C280: 'c': unreferenced local variable
+RECORD_IN.C(134): warning C280: 'v': unreferenced local variable
+linking...
+Program Size: data=26.0 xdata=32768 code=684
+"elec" - 0 Error(s), 3 Warning(s).
+Build target 'Target 1'
+linking...
+Program Size: data=26.0 xdata=32768 code=684
+"elec" - 0 Error(s), 0 Warning(s).
+Build target 'Target 1'
+compiling Record_in.c...
+RECORD_IN.C(78): warning C206: 'Timer0_us': missing function-prototype
+RECORD_IN.C(78): error C267: 'Timer0_us': requires ANSI-style prototype
+Target not created
+compiling Record_in.c...
+RECORD_IN.C(86): warning C206: 'SPI_Write': missing function-prototype
+RECORD_IN.C(86): error C267: 'SPI_Write': requires ANSI-style prototype
+Record_in.c - 1 Error(s), 1 Warning(s).
+Build target 'Target 1'
+compiling Record_in.c...
+RECORD_IN.C(86): warning C206: 'SPI_Write': missing function-prototype
+RECORD_IN.C(86): error C267: 'SPI_Write': requires ANSI-style prototype
+Target not created
+Build target 'Target 1'
+compiling Record_in.c...
+RECORD_IN.C(86): warning C206: 'SPI_Write': missing function-prototype
+RECORD_IN.C(86): error C267: 'SPI_Write': requires ANSI-style prototype
+Target not created
+Build target 'Target 1'
+compiling Record_in.c...
+RECORD_IN.C(170): warning C280: 'i': unreferenced local variable
+RECORD_IN.C(170): warning C280: 'j': unreferenced local variable
+RECORD_IN.C(170): warning C280: 'v1': unreferenced local variable
+RECORD_IN.C(171): warning C280: 'c': unreferenced local variable
+RECORD_IN.C(171): warning C280: 'v': unreferenced local variable
+linking...
+*** WARNING L15: MULTIPLE CALL TO SEGMENT
+    SEGMENT: ?PR?BUSYWAIT?RECORD_IN
+    CALLER1: ?PR?ADC0_ISR?RECORD_IN
+    CALLER2: ?PR?TIMER4_ISR?RECORD_IN
+Program Size: data=27.0 xdata=32768 code=816
+"elec" - 0 Error(s), 6 Warning(s).
+Build target 'Target 1'
+linking...
+*** WARNING L15: MULTIPLE CALL TO SEGMENT
+    SEGMENT: ?PR?BUSYWAIT?RECORD_IN
+    CALLER1: ?PR?ADC0_ISR?RECORD_IN
+    CALLER2: ?PR?TIMER4_ISR?RECORD_IN
+Program Size: data=27.0 xdata=32768 code=816
+"elec" - 0 Error(s), 1 Warning(s).
+Build target 'Target 1'
+compiling Record_in.c...
+RECORD_IN.C(133): warning C280: 'i': unreferenced local variable
+RECORD_IN.C(133): warning C280: 'j': unreferenced local variable
+RECORD_IN.C(134): warning C280: 'c': unreferenced local variable
+RECORD_IN.C(134): warning C280: 'v': unreferenced local variable
+RECORD_IN.C(134): warning C280: 'v1': unreferenced local variable
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?BUSYWAIT?RECORD_IN
+Program Size: data=25.0 xdata=32768 code=492
+"elec" - 0 Error(s), 6 Warning(s).
+Build target 'Target 1'
+compiling Record_in.c...
+RECORD_IN.C(133): warning C280: 'i': unreferenced local variable
+RECORD_IN.C(133): warning C280: 'j': unreferenced local variable
+RECORD_IN.C(134): warning C280: 'c': unreferenced local variable
+RECORD_IN.C(134): warning C280: 'v': unreferenced local variable
+RECORD_IN.C(134): warning C280: 'v1': unreferenced local variable
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?BUSYWAIT?RECORD_IN
+Program Size: data=25.0 xdata=8192 code=492
+"elec" - 0 Error(s), 6 Warning(s).
+Build target 'Target 1'
+Target has no object modules
+Target not created
+Build target 'Target 1'
+compiling Record_try.c...
+RECORD_TRY.C(23): error C231: 'TMR3RL': redefinition
+RECORD_TRY.C(24): error C231: 'TMR3': redefinition
+RECORD_TRY.C(25): error C231: 'ADC0': redefinition
+RECORD_TRY.C(28): error C231: 'RCAP4': redefinition
+RECORD_TRY.C(29): error C231: 'T4': redefinition
+RECORD_TRY.C(30): error C231: 'DAC1': redefinition
+RECORD_TRY.C(62): error C202: 'SPICLK': undefined identifier
+RECORD_TRY.C(187): error C202: 'i': undefined identifier
+RECORD_TRY.C(196): error C202: 'i': undefined identifier
+Target not created
+Build target 'Target 1'
+compiling Record_try.c...
+RECORD_TRY.C(46): error C202: 'SPICLK': undefined identifier
+RECORD_TRY.C(171): error C202: 'i': undefined identifier
+RECORD_TRY.C(180): error C202: 'i': undefined identifier
+Target not created
+Build target 'Target 1'
+compiling Record_try.c...
+RECORD_TRY.C(46): error C202: 'SPICLK': undefined identifier
+RECORD_TRY.C(171): error C202: 'i': undefined identifier
+RECORD_TRY.C(180): error C202: 'i': undefined identifier
+Target not created
+Build target 'Target 1'
+compiling Record_try.c...
+RECORD_TRY.C(172): error C202: 'i': undefined identifier
+RECORD_TRY.C(181): error C202: 'i': undefined identifier
+Target not created
+Build target 'Target 1'
+compiling Record_try.c...
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?SPI0_INIT?RECORD_TRY
+*** WARNING L15: MULTIPLE CALL TO SEGMENT
+    SEGMENT: ?PR?BUSYWAIT?RECORD_TRY
+    CALLER1: ?PR?ADC0_ISR?RECORD_TRY
+    CALLER2: ?C_C51STARTUP
+Program Size: data=25.0 xdata=32768 code=729
+"elec" - 0 Error(s), 2 Warning(s).
+Build target 'Target 1'
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?SPI0_INIT?RECORD_TRY
+*** WARNING L15: MULTIPLE CALL TO SEGMENT
+    SEGMENT: ?PR?BUSYWAIT?RECORD_TRY
+    CALLER1: ?PR?ADC0_ISR?RECORD_TRY
+    CALLER2: ?C_C51STARTUP
+Program Size: data=25.0 xdata=32768 code=729
+"elec" - 0 Error(s), 2 Warning(s).
+Build target 'Target 1'
+linking...
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?SPI0_INIT?RECORD_TRY
+*** WARNING L15: MULTIPLE CALL TO SEGMENT
+    SEGMENT: ?PR?BUSYWAIT?RECORD_TRY
+    CALLER1: ?PR?ADC0_ISR?RECORD_TRY
+    CALLER2: ?C_C51STARTUP
+Program Size: data=25.0 xdata=32768 code=729
+"elec" - 0 Error(s), 2 Warning(s).

@@ -1,0 +1,389 @@
+BL51 BANKED LINKER/LOCATER V6.22                                                        05/26/2017  19:37:56  PAGE 1
+
+
+BL51 BANKED LINKER/LOCATER V6.22, INVOKED BY:
+C:\KEIL\C51\BIN\BL51.EXE Record_try.obj TO elec RAMSIZE (256)
+
+
+MEMORY MODEL: SMALL
+
+
+INPUT MODULES INCLUDED:
+  Record_try.obj (RECORD_TRY)
+  C:\KEIL\C51\LIB\C51S.LIB (?C_STARTUP)
+  C:\KEIL\C51\LIB\C51S.LIB (?C?IMUL)
+  C:\KEIL\C51\LIB\C51S.LIB (?C?SLSHR)
+
+
+LINK MAP OF MODULE:  elec (RECORD_TRY)
+
+
+            TYPE    BASE      LENGTH    RELOCATION   SEGMENT NAME
+            -----------------------------------------------------
+
+            * * * * * * *   D A T A   M E M O R Y   * * * * * * *
+            REG     0000H     0008H     ABSOLUTE     "REG BANK 0"
+            DATA    0008H     000CH     UNIT         ?DT?RECORD_TRY
+            DATA    0014H     0004H     UNIT         _DATA_GROUP_
+            IDATA   0018H     0001H     UNIT         ?STACK
+
+            * * * * * * *  X D A T A   M E M O R Y  * * * * * * *
+            XDATA   0000H     8000H     UNIT         ?XD?RECORD_TRY
+
+            * * * * * * *   C O D E   M E M O R Y   * * * * * * *
+            CODE    0000H     0003H     ABSOLUTE     
+            CODE    0003H     0042H     UNIT         ?PR?TIMER4_ISR?RECORD_TRY
+            CODE    0045H     002AH     UNIT         ?PR?_SPI_WRITE?RECORD_TRY
+                    006FH     0004H                  *** GAP ***
+            CODE    0073H     0003H     ABSOLUTE     
+                    0076H     0005H                  *** GAP ***
+            CODE    007BH     0003H     ABSOLUTE     
+                    007EH     0005H                  *** GAP ***
+            CODE    0083H     0003H     ABSOLUTE     
+            CODE    0086H     00BDH     UNIT         ?PR?MAIN?RECORD_TRY
+            CODE    0143H     0081H     UNIT         ?PR?ADC0_ISR?RECORD_TRY
+            CODE    01C4H     0031H     UNIT         ?PR?_TIMER0_US?RECORD_TRY
+            CODE    01F5H     0026H     UNIT         ?PR?BUSYWAIT?RECORD_TRY
+            CODE    021BH     0026H     UNIT         ?C?LIB_CODE
+            CODE    0241H     001CH     UNIT         ?PR?SYSCLK_INIT?RECORD_TRY
+            CODE    025DH     001CH     UNIT         ?PR?PORT_INIT?RECORD_TRY
+            CODE    0279H     001CH     UNIT         ?PR?_TIMER4_INIT?RECORD_TRY
+            CODE    0295H     0017H     UNIT         ?PR?_TIMER3_INIT?RECORD_TRY
+            CODE    02ACH     0015H     UNIT         ?PR?ADC0_INIT?RECORD_TRY
+            CODE    02C1H     0010H     UNIT         ?PR?TIMER3_ISR?RECORD_TRY
+            CODE    02D1H     000CH     UNIT         ?C_C51STARTUP
+            CODE    02DDH     000AH     UNIT         ?PR?SPI0_INIT?RECORD_TRY
+
+
+
+OVERLAY MAP OF MODULE:   elec (RECORD_TRY)
+
+
+BL51 BANKED LINKER/LOCATER V6.22                                                      05/26/2017  19:37:56  PAGE 2
+
+
+SEGMENT                               DATA_GROUP 
+  +--> CALLED SEGMENT               START    LENGTH
+---------------------------------------------------
+?PR?ADC0_ISR?RECORD_TRY             -----    -----
+  +--> ?PR?_TIMER0_US?RECORD_TRY
+  +--> ?PR?_SPI_WRITE?RECORD_TRY
+  +--> ?PR?BUSYWAIT?RECORD_TRY
+
+?PR?BUSYWAIT?RECORD_TRY             0017H    0001H
+  +--> ?PR?_TIMER0_US?RECORD_TRY
+  +--> ?PR?_SPI_WRITE?RECORD_TRY
+
+*** NEW ROOT ***************************************************
+
+?C_C51STARTUP                       -----    -----
+  +--> ?PR?MAIN?RECORD_TRY
+
+?PR?MAIN?RECORD_TRY                 0015H    0002H
+  +--> ?PR?SYSCLK_INIT?RECORD_TRY
+  +--> ?PR?_TIMER3_INIT?RECORD_TRY
+  +--> ?PR?ADC0_INIT?RECORD_TRY
+  +--> ?PR?PORT_INIT?RECORD_TRY
+  +--> ?PR?_TIMER4_INIT?RECORD_TRY
+  +--> ?PR?_TIMER0_US?RECORD_TRY
+  +--> ?PR?_SPI_WRITE?RECORD_TRY
+  +--> ?PR?BUSYWAIT?RECORD_TRY
+
+
+
+SYMBOL TABLE OF MODULE:  elec (RECORD_TRY)
+
+  VALUE           TYPE          NAME
+  ----------------------------------
+
+  -------         MODULE        RECORD_TRY
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  D:009DH         PUBLIC        SPI0CKR
+  D:00FFH         PUBLIC        WDTCN
+  X:0000H         PUBLIC        record
+  D:00BCH         PUBLIC        ADC0CF
+  D:0008H         PUBLIC        sample
+  B:00A8H.7       PUBLIC        EA
+  D:00E7H         PUBLIC        EIE2
+  D:0086H         PUBLIC        P6
+  C:02C1H         PUBLIC        Timer3_ISR
+  C:0003H         PUBLIC        Timer4_ISR
+  D:00F4H         PUBLIC        T4
+  D:00E8H         PUBLIC        ADC0CN
+  D:00D7H         PUBLIC        DAC1CN
+  D:00A4H         PUBLIC        P0MDOUT
+  D:00A5H         PUBLIC        P1MDOUT
+  D:00A8H         PUBLIC        IE
+  D:00A6H         PUBLIC        P2MDOUT
+  D:00A7H         PUBLIC        P3MDOUT
+  C:02DDH         PUBLIC        SPI0_Init
+  D:00A3H         PUBLIC        EMI0CF
+  D:00D8H         PUBLIC        PCA0CN
+BL51 BANKED LINKER/LOCATER V6.22                                                      05/26/2017  19:37:56  PAGE 3
+
+
+  D:00B8H         PUBLIC        IP
+  D:00E1H         PUBLIC        XBR0
+  D:00E3H         PUBLIC        XBR2
+  D:00D1H         PUBLIC        REF0CN
+  B:00E8H.5       PUBLIC        AD0INT
+  D:00C0H         PUBLIC        SMB0CN
+  C:0086H         PUBLIC        main
+  D:0094H         PUBLIC        TMR3
+  D:000AH         PUBLIC        add
+  C:0295H         PUBLIC        _Timer3_Init
+  C:0279H         PUBLIC        _Timer4_Init
+  D:00F8H         PUBLIC        SPI0CN
+  B:00F8H.7       PUBLIC        SPIF
+  D:00B5H         PUBLIC        P74OUT
+  D:0088H         PUBLIC        TCON
+  D:00BBH         PUBLIC        AMX0SL
+  D:0091H         PUBLIC        TMR3CN
+  C:025DH         PUBLIC        PORT_Init
+  D:00B2H         PUBLIC        OSCICN
+  D:0092H         PUBLIC        TMR3RL
+  C:0143H         PUBLIC        ADC0_ISR
+  B:00E8H.7       PUBLIC        AD0EN
+  D:000EH         PUBLIC        itr
+  D:00B1H         PUBLIC        OSCXCN
+  C:0241H         PUBLIC        SYSCLK_Init
+  C:0065H         PUBLIC        _SPI_Write
+  D:00E4H         PUBLIC        RCAP4
+  D:0010H         PUBLIC        add2
+  D:0098H         PUBLIC        SCON0
+  D:00C8H         PUBLIC        T2CON
+  D:00C9H         PUBLIC        T4CON
+  D:009AH         PUBLIC        SPI0CFG
+  C:02ACH         PUBLIC        ADC0_Init
+  D:008EH         PUBLIC        CKCON
+  D:009BH         PUBLIC        SPI0DAT
+  D:00BEH         PUBLIC        ADC0
+  D:00D5H         PUBLIC        DAC1
+  D:00D0H         PUBLIC        PSW
+  C:01F5H         PUBLIC        busywait
+  C:01D0H         PUBLIC        _Timer0_us
+  -------         PROC          SYSCLK_INIT
+  -------         DO            
+  D:0006H         SYMBOL        i
+  -------         ENDDO         
+  C:0241H         LINE#         22
+  C:0241H         LINE#         23
+  C:0241H         LINE#         25
+  C:0244H         LINE#         26
+  C:0254H         LINE#         27
+  C:0259H         LINE#         28
+  C:025CH         LINE#         29
+  -------         ENDPROC       SYSCLK_INIT
+  -------         PROC          PORT_INIT
+  C:025DH         LINE#         31
+  C:025DH         LINE#         32
+  C:025DH         LINE#         33
+  C:0260H         LINE#         34
+BL51 BANKED LINKER/LOCATER V6.22                                                      05/26/2017  19:37:56  PAGE 4
+
+
+  C:0263H         LINE#         35
+  C:0266H         LINE#         36
+  C:0269H         LINE#         37
+  C:026CH         LINE#         38
+  C:026FH         LINE#         39
+  C:0272H         LINE#         40
+  C:0275H         LINE#         41
+  C:0278H         LINE#         42
+  -------         ENDPROC       PORT_INIT
+  -------         PROC          SPI0_INIT
+  C:02DDH         LINE#         43
+  C:02DDH         LINE#         44
+  C:02DDH         LINE#         45
+  C:02E0H         LINE#         46
+  C:02E3H         LINE#         47
+  C:02E6H         LINE#         48
+  -------         ENDPROC       SPI0_INIT
+  -------         PROC          L?0040
+  -------         ENDPROC       L?0040
+  -------         PROC          _SPI_WRITE
+  D:0007H         SYMBOL        v
+  C:0065H         LINE#         49
+  C:0065H         LINE#         50
+  C:0065H         LINE#         51
+  C:0067H         LINE#         52
+  C:0069H         LINE#         53
+  C:006CH         LINE#         54
+  C:006EH         LINE#         55
+  -------         ENDPROC       _SPI_WRITE
+  C:01CCH         SYMBOL        L?0042
+  -------         PROC          L?0041
+  -------         ENDPROC       L?0041
+  C:01CCH         SYMBOL        L?0042
+  -------         PROC          _TIMER0_US
+  D:0002H         SYMBOL        num
+  -------         DO            
+  D:0082H         SYMBOL        i
+  -------         ENDDO         
+  C:01D0H         LINE#         56
+  C:01D4H         LINE#         57
+  C:01D4H         LINE#         59
+  C:01F4H         LINE#         61
+  -------         ENDPROC       _TIMER0_US
+  -------         PROC          BUSYWAIT
+  -------         DO            
+  D:0017H         SYMBOL        v
+  -------         ENDDO         
+  C:01F5H         LINE#         62
+  C:01F5H         LINE#         63
+  C:01F5H         LINE#         64
+  C:01F8H         LINE#         65
+  C:01FEH         LINE#         66
+  C:01FEH         LINE#         68
+  C:0203H         LINE#         69
+  C:020AH         LINE#         70
+  C:020DH         LINE#         71
+  C:0211H         LINE#         72
+BL51 BANKED LINKER/LOCATER V6.22                                                      05/26/2017  19:37:56  PAGE 5
+
+
+  C:0211H         LINE#         74
+  C:0214H         LINE#         75
+  -------         ENDPROC       BUSYWAIT
+  -------         PROC          ADC0_INIT
+  C:02ACH         LINE#         79
+  C:02ACH         LINE#         80
+  C:02ACH         LINE#         81
+  C:02AFH         LINE#         82
+  C:02B2H         LINE#         83
+  C:02B5H         LINE#         84
+  C:02B8H         LINE#         85
+  C:02BBH         LINE#         86
+  C:02BEH         LINE#         87
+  C:02C0H         LINE#         88
+  -------         ENDPROC       ADC0_INIT
+  -------         PROC          _TIMER3_INIT
+  D:0006H         SYMBOL        counts
+  C:0295H         LINE#         90
+  C:0295H         LINE#         91
+  C:0295H         LINE#         92
+  C:0298H         LINE#         93
+  C:02A2H         LINE#         94
+  C:02A8H         LINE#         95
+  C:02ABH         LINE#         96
+  -------         ENDPROC       _TIMER3_INIT
+  -------         PROC          TIMER3_ISR
+  C:02C1H         LINE#         98
+  C:02C3H         LINE#         101
+  C:02CBH         LINE#         102
+  C:02CEH         LINE#         103
+  -------         ENDPROC       TIMER3_ISR
+  -------         PROC          ADC0_ISR
+  C:0143H         LINE#         105
+  C:0160H         LINE#         106
+  C:0179H         LINE#         107
+  C:017CH         LINE#         108
+  C:017FH         LINE#         109
+  C:0184H         LINE#         110
+  C:0186H         LINE#         111
+  C:0186H         LINE#         112
+  C:0189H         LINE#         113
+  C:018CH         LINE#         114
+  C:018FH         LINE#         115
+  C:0191H         LINE#         116
+  C:0191H         LINE#         117
+  C:0194H         LINE#         118
+  C:019BH         LINE#         119
+  C:01A0H         LINE#         120
+  C:01A1H         LINE#         121
+  C:01A1H         LINE#         122
+  C:01A4H         LINE#         124
+  C:01A7H         LINE#         126
+  C:01A9H         LINE#         127
+  -------         ENDPROC       ADC0_ISR
+  -------         PROC          _TIMER4_INIT
+  D:0006H         SYMBOL        counts
+  C:0279H         LINE#         130
+BL51 BANKED LINKER/LOCATER V6.22                                                      05/26/2017  19:37:56  PAGE 6
+
+
+  C:0279H         LINE#         131
+  C:0279H         LINE#         132
+  C:027CH         LINE#         133
+  C:027FH         LINE#         134
+  C:0288H         LINE#         135
+  C:028EH         LINE#         136
+  C:0291H         LINE#         137
+  C:0294H         LINE#         138
+  -------         ENDPROC       _TIMER4_INIT
+  -------         PROC          TIMER4_ISR
+  C:0003H         LINE#         140
+  C:0012H         LINE#         142
+  C:002DH         LINE#         143
+  C:0035H         LINE#         144
+  C:0038H         LINE#         145
+  -------         ENDPROC       TIMER4_ISR
+  -------         PROC          MAIN
+  -------         DO            
+  D:0015H         SYMBOL        i
+  -------         ENDDO         
+  C:0086H         LINE#         148
+  C:0086H         LINE#         150
+  C:008FH         LINE#         151
+  C:0092H         LINE#         152
+  C:0095H         LINE#         153
+  C:0098H         LINE#         154
+  C:009FH         LINE#         155
+  C:00A2H         LINE#         156
+  C:00A5H         LINE#         158
+  C:00A8H         LINE#         159
+  C:00ABH         LINE#         160
+  C:00AEH         LINE#         161
+  C:00B3H         LINE#         163
+  C:00B5H         LINE#         164
+  C:00B8H         LINE#         166
+  C:00BDH         LINE#         168
+  C:00BDH         LINE#         169
+  C:00C4H         LINE#         170
+  C:00C4H         LINE#         171
+  C:00C6H         LINE#         172
+  C:00CFH         LINE#         173
+  C:00D3H         LINE#         174
+  C:00D6H         LINE#         175
+  C:00DCH         LINE#         176
+  C:00DEH         LINE#         177
+  C:00DEH         LINE#         178
+  C:00E1H         LINE#         179
+  C:00E8H         LINE#         180
+  C:00EEH         LINE#         182
+  C:010DH         LINE#         183
+  C:0110H         LINE#         184
+  C:0113H         LINE#         185
+  C:0116H         LINE#         186
+  C:0127H         LINE#         187
+  C:012AH         LINE#         188
+  C:012FH         LINE#         189
+  C:0136H         LINE#         190
+BL51 BANKED LINKER/LOCATER V6.22                                                      05/26/2017  19:37:56  PAGE 7
+
+
+  C:0139H         LINE#         193
+  C:013EH         LINE#         194
+  C:0140H         LINE#         195
+  C:0140H         LINE#         197
+  -------         ENDPROC       MAIN
+  -------         ENDMOD        RECORD_TRY
+
+  -------         MODULE        ?C?IMUL
+  C:021BH         PUBLIC        ?C?IMUL
+  -------         ENDMOD        ?C?IMUL
+
+  -------         MODULE        ?C?SLSHR
+  C:022DH         PUBLIC        ?C?SLSHR
+  -------         ENDMOD        ?C?SLSHR
+
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?SPI0_INIT?RECORD_TRY
+
+*** WARNING L15: MULTIPLE CALL TO SEGMENT
+    SEGMENT: ?PR?BUSYWAIT?RECORD_TRY
+    CALLER1: ?PR?ADC0_ISR?RECORD_TRY
+    CALLER2: ?C_C51STARTUP
+
+Program Size: data=25.0 xdata=32768 code=729
+LINK/LOCATE RUN COMPLETE.  2 WARNING(S),  0 ERROR(S)
