@@ -1,0 +1,879 @@
+C51 COMPILER V9.01   ELEVATOR_CONTROL_2_0                                                  05/23/2017 20:55:10 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE ELEVATOR_CONTROL_2_0
+OBJECT MODULE PLACED IN Elevator_control_2.0.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE Elevator_control_2.0.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include <c8051f020.h>
+   2          #include <stdio.h>
+   3          #include "font.h"
+   4          
+   5          #define SYSCLK 22118400
+   6          #define NOKEY 255
+   7          #define OPERATION_TIME 250
+   8          #define STOP_TIME 500
+   9          #define STAIR_SUM 6     // 定义楼层数目
+  10          
+  11          // Define Finite-State Machine
+  12          #define F0 0    // 初始化状态
+  13          #define F1 1    // 等待状态，所有变量保持不变
+  14          #define F2 2    // 向上运行状态，设置direction = UP
+  15          #define F3 3    // 开启计数，到达一定时间(2s)后重置计数初值并增加楼层数。表示上升时间
+  16          #define F4 4    // 判断请求信息和目的地信息，决定之后是电梯是继续运行还是停靠
+  17          #define F5 5    // 停靠当前楼层，开启计数器，到达一定时间(2s)后重置计数初值。表示停靠时间
+  18          #define F6 6    // 向下运行状态，设置direction = DOWN
+  19          #define F7 7    // 开启计数，到达一定时间(2s)后重置计数初值并减小楼层数。表示下降时间
+  20          #define F8 8    // 判断请求信息和目的地信息，决定之后是电梯是继续运行还是停靠
+  21          
+  22          typedef unsigned char uchar;
+  23          
+  24          // 电梯运行状态
+  25          #define UP 0
+  26          #define DOWN 1
+  27          #define STOP 2
+  28          
+  29          
+  30          // Define for Display
+  31          #define UNIT_LENGTH         12  // 显示最小单元的长和宽, 12*8
+  32          #define UNIT_WIDTH              8
+  33          
+  34          #define BIAS                    434 // 底层电梯的下边沿（即地面。。470-3*12）
+  35          #define INSIDE_NUM              104     // 屏幕上显示电梯内部对应楼层按键是的位置（列）
+  36          #define OUTSIDE_DIR             232     // 屏幕上显示各楼层上/下楼按键的位置
+  37          #define DIRECTION_SHOW  20      // 屏幕上显示电梯运行方向的位置（列）
+  38          #define DIREC_ROW               240
+  39          #define LEFT_ELEVATOR   144     // 屏幕上电梯图形的左边沿
+  40          #define RIGHT_ELEVATOR  200     // 屏幕上电梯图形的右边沿
+  41          
+  42          #define ELEVATOR_HEIGHT 80      // 每层楼的高度，电梯位置改变的量
+  43          
+  44          // change_color() 函数的相应参数设定
+  45          #define ELEVATOR                0
+  46          #define INSIDE                  1
+  47          #define OUTSIDE_UP              2
+  48          #define OUTSIDE_DOWN    3
+  49          #define DIRECTION               4
+  50          #define OPEN_DOOR               5
+  51          #define CLOSE_DOOR              6
+  52          
+  53          // 屏幕显示颜色的设定
+  54          // (16bit, 5-6-5分别代表红-绿-蓝，比如红色就是11111-000000-00000，即0xF800)
+  55          #define YELLOW 0xFF00
+C51 COMPILER V9.01   ELEVATOR_CONTROL_2_0                                                  05/23/2017 20:55:10 PAGE 2   
+
+  56          #define WHITE  0xFFFF
+  57          #define BLACK  0x0000
+  58          #define RED        0xF800
+  59          
+  60          unsigned char xdata reset _at_ (0x8003);
+  61          unsigned char xdata cmd _at_ (0x8002);
+  62          unsigned char xdata mydata _at_ (0x9002);
+  63          
+  64          // 数码管设定
+  65          unsigned char xdata seg _at_ (0x8000);  //数码管段码地址
+  66          unsigned char xdata cs _at_ (0x8001);   //数码管位码地址
+  67          const unsigned char code segs[] =       //段码表
+  68          {0xC0, 0xF9, 0xA4, 0xB0, 0x99, 0x92, 0x82, 0xF8,
+  69          0x80, 0x90, 0x88, 0x83, 0xC6, 0xA1, 0x86, 0x8E};
+  70          const unsigned char code css[] = {0x7, 0xB, 0xD, 0xE};  //位码表
+  71          
+  72          
+  73          uchar direction = UP;           // 定义电梯的方向
+  74          uchar state_now = F0;
+  75          uchar state_next = F1;
+  76          unsigned int stair_now = 1;             // 目前所在的楼层
+  77          
+  78          bit K1, K2, K3, K4;                     // State-change Condition
+  79          
+  80          uchar up_request[STAIR_SUM + 1];
+  81          uchar down_request[STAIR_SUM + 1];
+  82          
+  83          unsigned int count = 0;         // For Counter 0
+  84          
+  85          void SYSCLK_Init (void)
+  86          {
+  87   1              int i;
+  88   1              OSCXCN = 0x67;
+  89   1              for (i=0; i < 256; i++);
+  90   1              while (!(OSCXCN & 0x80));
+  91   1              OSCICN = 0x88;
+  92   1      }
+  93          
+  94          void PORT_Init (void)
+  95          {
+  96   1              SYSCLK_Init();          // 使用外部晶振
+  97   1              EMI0CF = 0x1F;          // 非复用总线，不使用内部XRAM
+  98   1              XBR2 = 0x42;            // 使用P0-P3作为总线,允许XBR
+  99   1              P0MDOUT = 0xC0;         // 推挽输出P0.6 和 P0.7
+ 100   1              P1MDOUT = 0xFF;         // 高位地址
+ 101   1              P2MDOUT = 0xFF;         // 地位地址
+ 102   1              P3MDOUT = 0xFF;         // 数据总线
+ 103   1      }
+ 104          
+ 105          void Delay(int num)
+ 106          {
+ 107   1              int i;
+ 108   1              for(i=0;i<num;i++);
+ 109   1              return;
+ 110   1      }
+ 111          
+ 112          uchar getkey()
+ 113          {
+ 114   1              uchar i;
+ 115   1              uchar key;
+ 116   1              const uchar code dec[] = {0, 0, 1, 0, 2, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0};
+ 117   1              const uchar code trans[] = {0xC, 9, 5, 1, 0xD, 0, 6, 2, 0xE, 0xA, 7, 3, 0xF, 0xB, 8, 4};
+C51 COMPILER V9.01   ELEVATOR_CONTROL_2_0                                                  05/23/2017 20:55:10 PAGE 3   
+
+ 118   1      
+ 119   1              P4 = 0x0F;
+ 120   1              Delay(100);
+ 121   1              i = ~P4 & 0x0F;
+ 122   1              if (i == 0) return NOKEY;
+ 123   1              key = dec[i] * 4;
+ 124   1              Delay(1000);
+ 125   1              P4 = 0xF0;
+ 126   1              Delay(100);
+ 127   1              i = ~P4;
+ 128   1              i >>= 4;
+ 129   1              if (i == 0) return NOKEY;
+ 130   1              key = key + dec[i];
+ 131   1              key = trans[key];
+ 132   1              return key;
+ 133   1      }
+ 134          
+ 135          void SHOW_LED(int elevator_now)         // 显示目前电梯所在楼层
+ 136          {
+ 137   1              uchar i;
+ 138   1              int j = elevator_now;
+ 139   1              for (i=0; i<4; ++i) {
+ 140   2                      seg = segs[j % 10];
+ 141   2                      cs = css[i];
+ 142   2                      j /= 10;
+ 143   2                      Delay(1000);
+ 144   2              }
+ 145   1      }
+ 146          
+ 147          void timer_ms(int num)
+ 148          {
+ 149   1              int i;
+ 150   1              for(i = 0; i < num; i++){
+ 151   2                      SHOW_LED(stair_now);
+ 152   2                      Delay(1000);
+ 153   2              }
+ 154   1              return;
+ 155   1      }
+ 156          
+ 157          
+ 158          /* init the emif using the lower port  */
+ 159          void EMIF_Low(void)
+ 160          {
+ 161   1          SYSCLK_Init();
+ 162   1          EMI0CF = 0x1F;  // non-multiplexed mode, external only
+ 163   1          XBR2 = 0x42;    // Enable xbr
+ 164   1          P0MDOUT = 0xC0;
+ 165   1          P1MDOUT = 0xFF;
+ 166   1          P2MDOUT = 0xFF;
+ 167   1          P3MDOUT = 0xFF;
+ 168   1      }
+ 169          
+ 170          // 关于显示屏的函数
+ 171          void lcd_init9481(void)
+ 172          {
+ 173   1          reset = 1;
+ 174   1          Delay(200);
+ 175   1          cmd = 0x11; // Exit from sleeping
+ 176   1          Delay(3000);
+ 177   1          cmd = 0xD0; // Power Setting
+ 178   1          mydata = 0x07;
+ 179   1          mydata = 0x41;
+C51 COMPILER V9.01   ELEVATOR_CONTROL_2_0                                                  05/23/2017 20:55:10 PAGE 4   
+
+ 180   1          mydata = 0x1D;
+ 181   1          mydata = 0x0D;
+ 182   1      
+ 183   1          cmd = 0xD1; // VCOM Control
+ 184   1          mydata = 0x00;
+ 185   1          mydata = 0x2B;
+ 186   1          mydata = 0x1F;
+ 187   1      
+ 188   1          cmd = 0x0C; // get pixel format (why get?)
+ 189   1          mydata = 0x55;
+ 190   1          cmd = 0x3A; // set pixel format
+ 191   1          mydata = 0x55; // 16bit/pixel
+ 192   1          cmd = 0xB4; // Display mode;
+ 193   1          mydata = 0;
+ 194   1      
+ 195   1          cmd= 0xC0; // Panel Driving Setting
+ 196   1          mydata = 0;
+ 197   1          mydata = 0x3B;
+ 198   1          mydata = 0x0;
+ 199   1          mydata = 0x2;
+ 200   1          mydata = 0x11;
+ 201   1          mydata = 0;
+ 202   1      
+ 203   1          cmd = 0xC5; // Frame rate and Inversion Control
+ 204   1          mydata = 0x03;
+ 205   1      
+ 206   1          cmd = 0xC8;  // Gamma Setting
+ 207   1          mydata = 0;
+ 208   1          mydata = 14;
+ 209   1          mydata = 0x33;
+ 210   1          mydata = 0x10;
+ 211   1          mydata = 0x00;
+ 212   1          mydata = 0x16;
+ 213   1          mydata = 0x44;
+ 214   1          mydata = 0x36;
+ 215   1          mydata = 0x77;
+ 216   1          mydata = 0x00;
+ 217   1          mydata = 0x0F;
+ 218   1          mydata = 0x00;
+ 219   1      
+ 220   1          cmd = 0xF3;
+ 221   1          mydata = 0x40;
+ 222   1          mydata = 0x0A;
+ 223   1      
+ 224   1          cmd = 0x36; // Address Mode
+ 225   1          mydata = 0x0A;
+ 226   1      
+ 227   1          cmd = 0xF0;
+ 228   1          mydata = 0x08;
+ 229   1      
+ 230   1          cmd = 0xF6;
+ 231   1          mydata = 0x84;
+ 232   1          cmd = 0xF7;
+ 233   1          mydata = 0x80;
+ 234   1          cmd = 0x36;  // Address Mode;
+ 235   1          mydata = 0x0A;
+ 236   1      
+ 237   1          Delay(3000);
+ 238   1          cmd = 0x29;  // Set display on
+ 239   1      }
+ 240          
+ 241          void lcd_init9486(void) /* ZHA */
+C51 COMPILER V9.01   ELEVATOR_CONTROL_2_0                                                  05/23/2017 20:55:10 PAGE 5   
+
+ 242          {
+ 243   1          reset = 1;
+ 244   1          Delay(200);
+ 245   1          cmd = 0xF2;
+ 246   1          mydata = 0x18;
+ 247   1          mydata = 0xA3;
+ 248   1          mydata = 0x12;
+ 249   1          mydata = 0x02;
+ 250   1          mydata = 0xB2;
+ 251   1          mydata = 0x12;
+ 252   1          mydata = 0xFF;
+ 253   1          mydata = 0x10;
+ 254   1          mydata = 0x00;
+ 255   1          cmd = 0xF8;
+ 256   1          mydata = 0x21;
+ 257   1          mydata = 0x04;
+ 258   1          cmd = 0xF9;
+ 259   1          mydata = 0x00;
+ 260   1          mydata = 0x08;
+ 261   1          cmd = 0x36;
+ 262   1          mydata = 0x08;
+ 263   1          cmd = 0x3A;
+ 264   1          mydata = 0x05;
+ 265   1          cmd = 0xB4;
+ 266   1          mydata = 0x01;//0x00
+ 267   1          cmd = 0xB6;
+ 268   1          mydata = 0x02;
+ 269   1          mydata = 0x22;
+ 270   1          cmd = 0xC1;
+ 271   1          mydata = 0x41;
+ 272   1          cmd = 0xC5;
+ 273   1          mydata = 0x00;
+ 274   1          mydata = 0x07;//0x18
+ 275   1          cmd = 0xE0;
+ 276   1          mydata = 0x0F;
+ 277   1          mydata = 0x1F;
+ 278   1          mydata = 0x1C;
+ 279   1          mydata = 0x0C;
+ 280   1          mydata = 0x0F;
+ 281   1          mydata = 0x08;
+ 282   1          mydata = 0x48;
+ 283   1          mydata = 0x98;
+ 284   1          mydata = 0x37;
+ 285   1          mydata = 0x0A;
+ 286   1          mydata = 0x13;
+ 287   1          mydata = 0x04;
+ 288   1          mydata = 0x11;
+ 289   1          mydata = 0x0D;
+ 290   1          mydata = 0x00;
+ 291   1          cmd = 0xE1;
+ 292   1          mydata = 0x0F;
+ 293   1          mydata = 0x32;
+ 294   1          mydata = 0x2E;
+ 295   1          mydata = 0x0B;
+ 296   1          mydata = 0x0D;
+ 297   1          mydata = 0x05;
+ 298   1          mydata = 0x47;
+ 299   1          mydata = 0x75;
+ 300   1          mydata = 0x37;
+ 301   1          mydata = 0x06;
+ 302   1          mydata = 0x10;
+ 303   1          mydata = 0x03;
+C51 COMPILER V9.01   ELEVATOR_CONTROL_2_0                                                  05/23/2017 20:55:10 PAGE 6   
+
+ 304   1          mydata = 0x24;
+ 305   1          mydata = 0x20;
+ 306   1          mydata = 0x00;
+ 307   1          cmd = 0x11;
+ 308   1          Delay(200);
+ 309   1          cmd = 0x29;
+ 310   1      }
+ 311          
+ 312          void dis_color(unsigned int c)
+ 313          {
+ 314   1          int i, j;
+ 315   1          cmd = 0x2C;    // start write
+ 316   1          for (i = 0; i < 480; ++i)
+ 317   1              for (j = 0; j < 320; ++j) {
+ 318   2                  mydata = c >> 8;
+ 319   2                  mydata = c & 0xFF;
+ 320   2              }
+ 321   1      }
+ 322          
+ 323          void show_char(unsigned int x, unsigned int y, unsigned int color, unsigned char f)
+ 324          {
+ 325   1          unsigned char i, j, c;
+ 326   1          cmd = 0x2A; // set column address
+ 327   1          mydata = (x >> 8) & 1;
+ 328   1          mydata = (x & 0xFF);
+ 329   1          mydata = ((x + 7) >> 8) & 1;
+ 330   1          mydata = (x + 7) & 0xFF;
+ 331   1          cmd = 0x2B; // set page address
+ 332   1          mydata = (y >> 8) & 1;
+ 333   1          mydata = (y & 0xFF);
+ 334   1          mydata = ((y + 11) >> 8) & 1;
+ 335   1          mydata = (y + 11) & 0xFF;
+ 336   1          cmd = 0x2C;
+ 337   1          for (i = 0; i < 12; ++i) {
+ 338   2              c = font_8x12[f][i];
+ 339   2              for (j = 0; j < 8; ++j) {
+ 340   3                  if (c & 1) {
+ 341   4                      mydata = color >> 8;
+ 342   4                      mydata = color & 0xFF;
+ 343   4                  } else {
+ 344   4                      mydata = 0xff;
+ 345   4                      mydata = 0;
+ 346   4                  }
+ 347   3                  c = c >> 1;
+ 348   3              }
+ 349   2          }
+ 350   1      }
+ 351          
+ 352          
+ 353          void refresh_scrn()             // 刷新屏幕
+ 354          {
+ 355   1              int i, j;
+ 356   1              for (i=0; i<359; i+=8){
+ 357   2                      for (j=0; j<479; j+=8){
+ 358   3                              show_char(i, j, YELLOW, 0xDB);
+ 359   3                      }
+ 360   2              }
+ 361   1      }
+ 362          
+ 363          // 更新屏幕的函数，包括更新电梯所在位置、电梯内部按键状态、各层是否有人要乘电梯上/下楼、电梯运行方向
+ 364          void change_color(unsigned int stair, uchar object, unsigned int color)
+ 365          {
+C51 COMPILER V9.01   ELEVATOR_CONTROL_2_0                                                  05/23/2017 20:55:10 PAGE 7   
+
+ 366   1              unsigned int i, j;
+ 367   1              switch(object){
+ 368   2                      case ELEVATOR:
+ 369   2                              for(i = LEFT_ELEVATOR; i <= RIGHT_ELEVATOR; i += UNIT_WIDTH)
+ 370   2                                      for(j = BIAS-ELEVATOR_HEIGHT*(stair-1)-2*UNIT_LENGTH; j <= BIAS-ELEVATOR_HEIGHT*(stair-1)+2*UNIT_LENGT
+             -H; j += UNIT_LENGTH)
+ 371   2                                              show_char(i,j,color,0xDB);
+ 372   2                              break;
+ 373   2                      case INSIDE:    //更新电梯内部按键状态，如有楼层被按下，那么相应的数字将会被标红
+ 374   2                              if(stair == 1){
+ 375   3                                      show_char(INSIDE_NUM+UNIT_WIDTH, BIAS, color, 0xDB);
+ 376   3                                      show_char(INSIDE_NUM+UNIT_WIDTH, BIAS+UNIT_LENGTH, color, 0xDB);
+ 377   3                                      show_char(INSIDE_NUM+UNIT_WIDTH, BIAS+2*UNIT_LENGTH, color, 0xDB);
+ 378   3                                      show_char(INSIDE_NUM+UNIT_WIDTH, BIAS-UNIT_LENGTH, color, 0xDB);
+ 379   3                                      show_char(INSIDE_NUM+UNIT_WIDTH, BIAS-2*UNIT_LENGTH, color, 0xDB);
+ 380   3                              }
+ 381   2                              else if(stair == 2){
+ 382   3                                      show_char(INSIDE_NUM, BIAS-ELEVATOR_HEIGHT*(stair-1), color, 0xDB);
+ 383   3                                      show_char(INSIDE_NUM+UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1), color, 0xDB);
+ 384   3                                      show_char(INSIDE_NUM-UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1), color, 0xDB);
+ 385   3      
+ 386   3                                      show_char(INSIDE_NUM-UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1)+UNIT_LENGTH, color, 0xDB);
+ 387   3      
+ 388   3                                      show_char(INSIDE_NUM, BIAS-ELEVATOR_HEIGHT*(stair-1)+2*UNIT_LENGTH, color, 0xDB);
+ 389   3                                      show_char(INSIDE_NUM+UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1)+2*UNIT_LENGTH, color, 0xDB);
+ 390   3                                      show_char(INSIDE_NUM-UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1)+2*UNIT_LENGTH, color, 0xDB);
+ 391   3      
+ 392   3                                      show_char(INSIDE_NUM+UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1)-UNIT_LENGTH, color, 0xDB);
+ 393   3      
+ 394   3                                      show_char(INSIDE_NUM, BIAS-ELEVATOR_HEIGHT*(stair-1)-2*UNIT_LENGTH, color, 0xDB);
+ 395   3                                      show_char(INSIDE_NUM+UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1)-2*UNIT_LENGTH, color, 0xDB);
+ 396   3                                      show_char(INSIDE_NUM-UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1)-2*UNIT_LENGTH, color, 0xDB);
+ 397   3                              }
+ 398   2                              else if(stair == 3){
+ 399   3                                      show_char(INSIDE_NUM, BIAS-ELEVATOR_HEIGHT*(stair-1), color, 0xDB);
+ 400   3                                      show_char(INSIDE_NUM+UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1), color, 0xDB);
+ 401   3                                      show_char(INSIDE_NUM-UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1), color, 0xDB);
+ 402   3      
+ 403   3                                      show_char(INSIDE_NUM+UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1)+UNIT_LENGTH, color, 0xDB);
+ 404   3      
+ 405   3                                      show_char(INSIDE_NUM, BIAS-ELEVATOR_HEIGHT*(stair-1)+2*UNIT_LENGTH, color, 0xDB);
+ 406   3                                      show_char(INSIDE_NUM+UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1)+2*UNIT_LENGTH, color, 0xDB);
+ 407   3                                      show_char(INSIDE_NUM-UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1)+2*UNIT_LENGTH, color, 0xDB);
+ 408   3      
+ 409   3                                      show_char(INSIDE_NUM+UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1)-UNIT_LENGTH, color, 0xDB);
+ 410   3      
+ 411   3                                      show_char(INSIDE_NUM, BIAS-ELEVATOR_HEIGHT*(stair-1)-2*UNIT_LENGTH, color, 0xDB);
+ 412   3                                      show_char(INSIDE_NUM+UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1)-2*UNIT_LENGTH, color, 0xDB);
+ 413   3                                      show_char(INSIDE_NUM-UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1)-2*UNIT_LENGTH, color, 0xDB);
+ 414   3                              }
+ 415   2                              else if(stair == 4){
+ 416   3                                      show_char(INSIDE_NUM, BIAS-ELEVATOR_HEIGHT*(stair-1), color, 0xDB);
+ 417   3                                      show_char(INSIDE_NUM+UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1), color, 0xDB);
+ 418   3                                      show_char(INSIDE_NUM-UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1), color, 0xDB);
+ 419   3      
+ 420   3                                      show_char(INSIDE_NUM+UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1)+UNIT_LENGTH, color, 0xDB);
+ 421   3      
+ 422   3                                      show_char(INSIDE_NUM+UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1)+2*UNIT_LENGTH, color, 0xDB);
+ 423   3      
+ 424   3                                      show_char(INSIDE_NUM+UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1)-UNIT_LENGTH, color, 0xDB);
+ 425   3                                      show_char(INSIDE_NUM-UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1)-UNIT_LENGTH, color, 0xDB);
+ 426   3      
+C51 COMPILER V9.01   ELEVATOR_CONTROL_2_0                                                  05/23/2017 20:55:10 PAGE 8   
+
+ 427   3                                      show_char(INSIDE_NUM+UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1)-2*UNIT_LENGTH, color, 0xDB);
+ 428   3                                      show_char(INSIDE_NUM-UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1)-2*UNIT_LENGTH, color, 0xDB);
+ 429   3                              }
+ 430   2                              else if(stair == 5){
+ 431   3                                      show_char(INSIDE_NUM, BIAS-ELEVATOR_HEIGHT*(stair-1), color, 0xDB);
+ 432   3                                      show_char(INSIDE_NUM+UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1), color, 0xDB);
+ 433   3                                      show_char(INSIDE_NUM-UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1), color, 0xDB);
+ 434   3      
+ 435   3                                      show_char(INSIDE_NUM+UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1)+UNIT_LENGTH, color, 0xDB);
+ 436   3      
+ 437   3                                      show_char(INSIDE_NUM, BIAS-ELEVATOR_HEIGHT*(stair-1)+2*UNIT_LENGTH, color, 0xDB);
+ 438   3                                      show_char(INSIDE_NUM+UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1)+2*UNIT_LENGTH, color, 0xDB);
+ 439   3                                      show_char(INSIDE_NUM-UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1)+2*UNIT_LENGTH, color, 0xDB);
+ 440   3      
+ 441   3                                      show_char(INSIDE_NUM-UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1)-UNIT_LENGTH, color, 0xDB);
+ 442   3      
+ 443   3                                      show_char(INSIDE_NUM, BIAS-ELEVATOR_HEIGHT*(stair-1)-2*UNIT_LENGTH, color, 0xDB);
+ 444   3                                      show_char(INSIDE_NUM+UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1)-2*UNIT_LENGTH, color, 0xDB);
+ 445   3                                      show_char(INSIDE_NUM-UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1)-2*UNIT_LENGTH, color, 0xDB);
+ 446   3                              }
+ 447   2                              else if(stair == 6){
+ 448   3                      show_char(INSIDE_NUM, BIAS-ELEVATOR_HEIGHT*(stair-1), color, 0xDB);
+ 449   3                                      show_char(INSIDE_NUM+UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1), color, 0xDB);
+ 450   3                                      show_char(INSIDE_NUM-UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1), color, 0xDB);
+ 451   3      
+ 452   3                                      show_char(INSIDE_NUM+UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1)+UNIT_LENGTH, color, 0xDB);
+ 453   3      
+ 454   3                                      show_char(INSIDE_NUM-UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1)+UNIT_LENGTH, color, 0xDB);
+ 455   3      
+ 456   3                                      show_char(INSIDE_NUM, BIAS-ELEVATOR_HEIGHT*(stair-1)+2*UNIT_LENGTH, color, 0xDB);
+ 457   3                                      show_char(INSIDE_NUM+UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1)+2*UNIT_LENGTH, color, 0xDB);
+ 458   3                                      show_char(INSIDE_NUM-UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1)+2*UNIT_LENGTH, color, 0xDB);
+ 459   3      
+ 460   3                                      show_char(INSIDE_NUM-UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1)-UNIT_LENGTH, color, 0xDB);
+ 461   3      
+ 462   3                                      show_char(INSIDE_NUM, BIAS-ELEVATOR_HEIGHT*(stair-1)-2*UNIT_LENGTH, color, 0xDB);
+ 463   3                                      show_char(INSIDE_NUM+UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1)-2*UNIT_LENGTH, color, 0xDB);
+ 464   3                                      show_char(INSIDE_NUM-UNIT_WIDTH, BIAS-ELEVATOR_HEIGHT*(stair-1)-2*UNIT_LENGTH, color, 0xDB);
+ 465   3                              }
+ 466   2                              break;
+ 467   2                      case OUTSIDE_UP:        //如果有楼层的“向上”按键被按下，在屏幕上相应向上的三角被标红
+ 468   2                              show_char(OUTSIDE_DIR, BIAS-ELEVATOR_HEIGHT*(stair-1)-UNIT_LENGTH, color, 0x1E);
+ 469   2                              break;
+ 470   2                      case OUTSIDE_DOWN:      //如果有楼层的“向下”按键被按下，在屏幕上相应向下的三角被标红
+ 471   2                              show_char(OUTSIDE_DIR, BIAS-ELEVATOR_HEIGHT*(stair-1)+UNIT_LENGTH, color, 0x1F);
+ 472   2                              break;
+ 473   2                      case DIRECTION:         //更新电梯运行方向
+ 474   2                              if(direction == UP){
+ 475   3                                      show_char(DIRECTION_SHOW, DIREC_ROW-2*UNIT_LENGTH, color, 0x1E);
+ 476   3                                      show_char(DIRECTION_SHOW, DIREC_ROW+UNIT_LENGTH, (RED-color), 0x1F);
+ 477   3                              }
+ 478   2                              else if(direction == DOWN){
+ 479   3                                      show_char(DIRECTION_SHOW, DIREC_ROW-2*UNIT_LENGTH, (RED-color), 0x1E);
+ 480   3                                      show_char(DIRECTION_SHOW, DIREC_ROW+UNIT_LENGTH, color, 0x1F);
+ 481   3                              }
+ 482   2                              break;
+ 483   2                      case OPEN_DOOR:
+ 484   2                              for(i = LEFT_ELEVATOR+3*UNIT_WIDTH; i <= RIGHT_ELEVATOR-3*UNIT_WIDTH; i += UNIT_WIDTH)
+ 485   2                                      for(j = BIAS-ELEVATOR_HEIGHT*(stair-1)-2*UNIT_LENGTH; j <= BIAS-ELEVATOR_HEIGHT*(stair-1)+2*UNIT_LENGT
+             -H; j += UNIT_LENGTH)
+ 486   2                                              show_char(i,j,color,0xDB);
+ 487   2                              timer_ms(100);
+C51 COMPILER V9.01   ELEVATOR_CONTROL_2_0                                                  05/23/2017 20:55:10 PAGE 9   
+
+ 488   2                              for(i = LEFT_ELEVATOR+2*UNIT_WIDTH; i <= RIGHT_ELEVATOR-2*UNIT_WIDTH; i += UNIT_WIDTH)
+ 489   2                                      for(j = BIAS-ELEVATOR_HEIGHT*(stair-1)-2*UNIT_LENGTH; j <= BIAS-ELEVATOR_HEIGHT*(stair-1)+2*UNIT_LENGT
+             -H; j += UNIT_LENGTH)
+ 490   2                                              show_char(i,j,color,0xDB);
+ 491   2                              timer_ms(100);
+ 492   2                              for(i = LEFT_ELEVATOR+UNIT_WIDTH; i <= RIGHT_ELEVATOR-UNIT_WIDTH; i += UNIT_WIDTH)
+ 493   2                                      for(j = BIAS-ELEVATOR_HEIGHT*(stair-1)-2*UNIT_LENGTH; j <= BIAS-ELEVATOR_HEIGHT*(stair-1)+2*UNIT_LENGT
+             -H; j += UNIT_LENGTH)
+ 494   2                                              show_char(i,j,color,0xDB);
+ 495   2                              timer_ms(100);
+ 496   2                              for(i = LEFT_ELEVATOR; i <= RIGHT_ELEVATOR; i += UNIT_WIDTH)
+ 497   2                                      for(j = BIAS-ELEVATOR_HEIGHT*(stair-1)-2*UNIT_LENGTH; j <= BIAS-ELEVATOR_HEIGHT*(stair-1)+2*UNIT_LENGT
+             -H; j += UNIT_LENGTH)
+ 498   2                                              show_char(i,j,color,0xDB);
+ 499   2                              break;
+ 500   2                      case CLOSE_DOOR:
+ 501   2                              for(j = BIAS-ELEVATOR_HEIGHT*(stair-1)-2*UNIT_LENGTH; j <= BIAS-ELEVATOR_HEIGHT*(stair-1)+2*UNIT_LENGTH
+             -; j += UNIT_LENGTH){
+ 502   3                                      show_char(LEFT_ELEVATOR,j,RED,0xDB);
+ 503   3                                      show_char(RIGHT_ELEVATOR,j,RED,0xDB);
+ 504   3                              }
+ 505   2                              timer_ms(100);
+ 506   2                              for(j = BIAS-ELEVATOR_HEIGHT*(stair-1)-2*UNIT_LENGTH; j <= BIAS-ELEVATOR_HEIGHT*(stair-1)+2*UNIT_LENGTH
+             -; j += UNIT_LENGTH){
+ 507   3                                      show_char(LEFT_ELEVATOR+UNIT_WIDTH,j,RED,0xDB);
+ 508   3                                      show_char(RIGHT_ELEVATOR-UNIT_WIDTH,j,RED,0xDB);
+ 509   3                              }
+ 510   2                              timer_ms(100);
+ 511   2                              for(j = BIAS-ELEVATOR_HEIGHT*(stair-1)-2*UNIT_LENGTH; j <= BIAS-ELEVATOR_HEIGHT*(stair-1)+2*UNIT_LENGTH
+             -; j += UNIT_LENGTH){
+ 512   3                                      show_char(LEFT_ELEVATOR+2*UNIT_WIDTH,j,RED,0xDB);
+ 513   3                                      show_char(RIGHT_ELEVATOR-2*UNIT_WIDTH,j,RED,0xDB);
+ 514   3                              }
+ 515   2                              timer_ms(100);
+ 516   2                              for(j = BIAS-ELEVATOR_HEIGHT*(stair-1)-2*UNIT_LENGTH; j <= BIAS-ELEVATOR_HEIGHT*(stair-1)+2*UNIT_LENGTH
+             -; j += UNIT_LENGTH){
+ 517   3                                      show_char(LEFT_ELEVATOR+3*UNIT_WIDTH,j,RED,0xDB);
+ 518   3                                      show_char(RIGHT_ELEVATOR-3*UNIT_WIDTH,j,RED,0xDB);
+ 519   3                              }
+ 520   2                              break;
+ 521   2                      default:
+ 522   2                              break;
+ 523   2              }
+ 524   1      }
+ 525          
+ 526          void state_convert(void)
+ 527          {
+ 528   1          uchar i, j;
+ 529   1              switch(state_now){
+ 530   2                      case F0:
+ 531   2                              stair_now = 1;   //direction = STOP;
+ 532   2                              state_next = F1;
+ 533   2                              break;
+ 534   2                      case F1:
+ 535   2                              if(K1)  state_next = F2;
+ 536   2                              else if(K2)     state_next = F6;
+ 537   2                              else state_next = F1;
+ 538   2                              break;
+ 539   2                      case F2:
+ 540   2                              direction = UP;
+ 541   2                              change_color(stair_now,DIRECTION,RED);
+ 542   2                              state_next = F3;
+C51 COMPILER V9.01   ELEVATOR_CONTROL_2_0                                                  05/23/2017 20:55:10 PAGE 10  
+
+ 543   2                              break;
+ 544   2                      case F3:
+ 545   2                              //打开计数器开始计数，运行2s后更新楼层
+ 546   2                              if(TR0 == 0)
+ 547   2                                      TR0 = 1;
+ 548   2                              break;
+ 549   2                      case F4:
+ 550   2                              if( K3 || ((!K1)&&(!K3)) )
+ 551   2                                      state_next = F5;
+ 552   2                              else
+ 553   2                                      state_next = F3;
+ 554   2                              break;
+ 555   2                      case F5:
+ 556   2                              // 清空已到楼层的请求标记
+ 557   2                              if(stair_now == 1 || stair_now == 6){
+ 558   3                                      up_request[stair_now] = 0;
+ 559   3                                      down_request[stair_now] = 0;
+ 560   3                              }
+ 561   2                              else{
+ 562   3                      // Bug HERE! -- Fixed, needs Check
+ 563   3                                      if(direction == UP){
+ 564   4                          up_request[stair_now] = 0;
+ 565   4      
+ 566   4                          direction = DOWN;
+ 567   4                          for(i = stair_now+1; i <= STAIR_SUM; i++){
+ 568   5                              if(up_request[i]){
+ 569   6                                  direction = UP;
+ 570   6                                  break;
+ 571   6                              }
+ 572   5                          }
+ 573   4                                      }
+ 574   3      
+ 575   3                                      else if(direction == DOWN){
+ 576   4                          down_request[stair_now] = 0;
+ 577   4      
+ 578   4                          direction = UP;
+ 579   4                          for(i = stair_now-1; i >= 1; i--){
+ 580   5                              if(up_request[i]){
+ 581   6                                  direction = DOWN;
+ 582   6                                  break;
+ 583   6                              }
+ 584   5                          }
+ 585   4                                      }
+ 586   3      
+ 587   3                              }
+ 588   2                              // 打开计数器开始计数，停留2s
+ 589   2                              if(TR0 == 0)
+ 590   2                                      TR0 = 1;
+ 591   2                              break;
+ 592   2                      case F6:
+ 593   2                              direction = DOWN;
+ 594   2                              change_color(stair_now,DIRECTION,RED);
+ 595   2                              state_next = F7;
+ 596   2                              break;
+ 597   2                      case F7:
+ 598   2                              // 打开计数器开始计数，运行2s后更新楼层
+ 599   2                              if(TR0 == 0)
+ 600   2                                      TR0 = 1;
+ 601   2                              break;
+ 602   2                      case F8:
+ 603   2                              if( K4 || ((!K2)&&(!K4)) )
+ 604   2                                      state_next = F5;
+C51 COMPILER V9.01   ELEVATOR_CONTROL_2_0                                                  05/23/2017 20:55:10 PAGE 11  
+
+ 605   2                              else
+ 606   2                                      state_next = F7;
+ 607   2                              break;
+ 608   2                      default:
+ 609   2                              state_next = F0;
+ 610   2                              break;
+ 611   2              }
+ 612   1      }
+*** WARNING C280 IN LINE 528 OF ELEVATOR_CONTROL_2.0.C: 'j': unreferenced local variable
+ 613          
+ 614          void TIMER0_ISR (void) interrupt 1
+ 615          {
+ 616   1              count++;
+ 617   1              if(count >= 14400){
+ 618   2                      if(state_now == F3){
+ 619   3                              change_color(stair_now,ELEVATOR,BLACK);
+ 620   3                              stair_now++;
+ 621   3                              change_color(stair_now,ELEVATOR,RED);
+ 622   3                              state_next = F4;
+ 623   3                      }
+ 624   2                      else if(state_now == F7){
+ 625   3                              change_color(stair_now,ELEVATOR,BLACK);
+ 626   3                              stair_now--;
+ 627   3                              change_color(stair_now,ELEVATOR,RED);
+ 628   3                              state_next = F8;
+ 629   3                      }
+ 630   2                      else if(state_now == F5){
+ 631   3                              state_next = F1;    // 处理结束后回到F1状态
+ 632   3      
+ 633   3                              if((direction == UP && stair_now != 6)||(stair_now == 1))
+ 634   3                                      change_color(stair_now,OUTSIDE_UP,BLACK);
+ 635   3                              else if((direction == DOWN && stair_now != 1)||(stair_now == 6))
+ 636   3                                      change_color(stair_now,OUTSIDE_DOWN,BLACK);
+ 637   3      
+ 638   3                              // 实现开门+关门显示
+ 639   3                              change_color(stair_now,OPEN_DOOR,BLACK);
+ 640   3                              timer_ms(500);
+ 641   3                              change_color(stair_now,CLOSE_DOOR,RED);
+ 642   3                              timer_ms(500);
+ 643   3                              change_color(stair_now,INSIDE,BLACK);
+ 644   3                      }
+ 645   2                      count = 0;
+ 646   2                      TR0 = 0;
+ 647   2              }
+ 648   1      }
+ 649          
+ 650          
+ 651          void main(void){
+ 652   1              uchar temp = NOKEY;
+ 653   1              uchar ctrl = NOKEY;
+ 654   1              uchar i;
+ 655   1      
+ 656   1              WDTCN = 0xde;
+ 657   1              WDTCN = 0xad;   // 禁止看门狗
+ 658   1              SYSCLK_Init();
+ 659   1              PORT_Init();
+ 660   1      
+ 661   1              // 计数器0的设置
+ 662   1              EA = 1;
+ 663   1              TMOD |= 0x02;
+ 664   1              TH0 = 0x00;
+ 665   1              TL0 = 0x00;
+C51 COMPILER V9.01   ELEVATOR_CONTROL_2_0                                                  05/23/2017 20:55:10 PAGE 12  
+
+ 666   1              ET0 = 1;
+ 667   1              P7 = 0x80;
+ 668   1      
+ 669   1              for(i = 0; i <= STAIR_SUM; i++){
+ 670   2                      up_request[i] = 0;
+ 671   2                      down_request[i] = 0;
+ 672   2              }
+ 673   1      
+ 674   1          EMIF_Low();
+ 675   1          EMI0TC = 0x41;
+ 676   1          lcd_init9486();
+ 677   1          
+ 678   1              refresh_scrn();
+ 679   1      
+ 680   1              // initial the board
+ 681   1              show_char(DIRECTION_SHOW+2*UNIT_WIDTH, DIREC_ROW-2*UNIT_LENGTH, BLACK, 'U');
+ 682   1              show_char(DIRECTION_SHOW+3*UNIT_WIDTH, DIREC_ROW-2*UNIT_LENGTH, BLACK, 'P');
+ 683   1              show_char(DIRECTION_SHOW+2*UNIT_WIDTH, DIREC_ROW+UNIT_LENGTH, BLACK, 'D');
+ 684   1              show_char(DIRECTION_SHOW+3*UNIT_WIDTH, DIREC_ROW+UNIT_LENGTH, BLACK, 'O');
+ 685   1              show_char(DIRECTION_SHOW+4*UNIT_WIDTH, DIREC_ROW+UNIT_LENGTH, BLACK, 'W');
+ 686   1              show_char(DIRECTION_SHOW+5*UNIT_WIDTH, DIREC_ROW+UNIT_LENGTH, BLACK, 'N');
+ 687   1      
+ 688   1              change_color(i,DIRECTION,RED);
+ 689   1              for(i = 1; i <= 6; i++){
+ 690   2                      if(i>1)
+ 691   2                              change_color(i,ELEVATOR,BLACK);
+ 692   2                      else
+ 693   2                              change_color(i,ELEVATOR,RED);
+ 694   2                      change_color(i,INSIDE,BLACK);
+ 695   2                      if(i < 6)
+ 696   2                              change_color(i,OUTSIDE_UP,BLACK);
+ 697   2                      if(i > 1)
+ 698   2                              change_color(i,OUTSIDE_DOWN,BLACK);
+ 699   2              }
+ 700   1      
+ 701   1              while(1){
+ 702   2                      SHOW_LED(stair_now);    //数码管显示楼层
+ 703   2      
+ 704   2                      //根据按下的按键更新电梯的需求状态和在屏幕上的显示状态
+ 705   2                      switch(temp){
+ 706   3                              case 0x1:
+ 707   3                                      change_color(1,OUTSIDE_UP,RED);
+ 708   3                                      up_request[1] = 1;
+ 709   3                                      down_request[1] = 1;
+ 710   3                                      break;
+ 711   3                              case 0x2:
+ 712   3                                      change_color(2,OUTSIDE_UP,RED);
+ 713   3                                      up_request[2] = 1;
+ 714   3                                      break;
+ 715   3                              case 0x3:
+ 716   3                                      change_color(3,OUTSIDE_UP,RED);
+ 717   3                                      up_request[3] = 1;
+ 718   3                                      break;
+ 719   3                              case 0x4:
+ 720   3                                      change_color(4,OUTSIDE_UP,RED);
+ 721   3                                      up_request[4] = 1;
+ 722   3                                      break;
+ 723   3                              case 0x5:
+ 724   3                                      change_color(5,OUTSIDE_UP,RED);
+ 725   3                                      up_request[5] = 1;
+ 726   3                                      break;
+ 727   3                  case 0x6:
+C51 COMPILER V9.01   ELEVATOR_CONTROL_2_0                                                  05/23/2017 20:55:10 PAGE 13  
+
+ 728   3                                      change_color(6,OUTSIDE_DOWN,RED);
+ 729   3                                      up_request[6] = 0;
+ 730   3                                      down_request[6] = 1;
+ 731   3                                      break;
+ 732   3                              case 0x7:
+ 733   3                                      change_color(2,OUTSIDE_DOWN,RED);
+ 734   3                                      down_request[2] = 1;
+ 735   3                                      break;
+ 736   3                              case 0x8:
+ 737   3                                      change_color(3,OUTSIDE_DOWN,RED);
+ 738   3                                      down_request[3] = 1;
+ 739   3                                      break;
+ 740   3                              case 0x9:
+ 741   3                                      change_color(4,OUTSIDE_DOWN,RED);
+ 742   3                                      down_request[4] = 1;
+ 743   3                                      break;
+ 744   3                  case 0x0:
+ 745   3                                      change_color(5,OUTSIDE_DOWN,RED);
+ 746   3                                      down_request[5] = 1;
+ 747   3                                      break;
+ 748   3                              case 0xA:
+ 749   3                                      down_request[1] = 1;
+ 750   3                                      change_color(1,INSIDE,RED);
+ 751   3                                      break;
+ 752   3                              case 0xB:
+ 753   3                                      change_color(2,INSIDE,RED);
+ 754   3                                      if(stair_now < 2)
+ 755   3                                              up_request[2] = 1;
+ 756   3                                      else if(stair_now > 2)
+ 757   3                                              down_request[2] = 1;
+ 758   3                                      break;
+ 759   3                              case 0xC:
+ 760   3                                      change_color(3,INSIDE,RED);
+ 761   3                                      if(stair_now < 3)
+ 762   3                                              up_request[3] = 1;
+ 763   3                                      else if(stair_now > 3)
+ 764   3                                              down_request[3] = 1;
+ 765   3                                      break;
+ 766   3                              case 0xD:
+ 767   3                                      change_color(4,INSIDE,RED);
+ 768   3                                      if(stair_now < 4)
+ 769   3                                              up_request[4] = 1;
+ 770   3                                      else if(stair_now > 4)
+ 771   3                                              down_request[4] = 1;
+ 772   3                                      break;
+ 773   3                  case 0xE:
+ 774   3                                      change_color(5,INSIDE,RED);
+ 775   3                                      if(stair_now < 5)
+ 776   3                                              up_request[5] = 1;
+ 777   3                                      else if(stair_now > 5)
+ 778   3                                              down_request[5] = 1;
+ 779   3                                      break;
+ 780   3                              case 0xF:
+ 781   3                                      change_color(6,INSIDE,RED);
+ 782   3                                      up_request[6] = 1;
+ 783   3                                      break;
+ 784   3                              default:
+ 785   3                                      break;
+ 786   3                      }
+ 787   2      
+ 788   2                      // Update K1, K2, K3, K4
+ 789   2                      K1 = 0; //K1=1 表示在当前楼层(stair_now)以上有请求(上/下)，或电梯内部按下的目的地高于当前楼层
+C51 COMPILER V9.01   ELEVATOR_CONTROL_2_0                                                  05/23/2017 20:55:10 PAGE 14  
+
+ 790   2                      K2 = 0; //K2=1 表示在当前楼层(stair_now)以下有请求(上/下)，或电梯内部按下的目的地低于当前楼层
+ 791   2                      K3 = 0; //K3=1 表示当前楼层为目的地之一，或此层有人要乘电梯上楼，需要停靠此层
+ 792   2                      K4 = 0; //K4=1 表示当前楼层为目的地之一，或此层有人要乘电梯下楼，需要停靠此层
+ 793   2      
+ 794   2                      if((up_request[stair_now] == 1) && (direction == UP))
+ 795   2                              K3 = 1;
+ 796   2                      for(i = stair_now+1; i <= STAIR_SUM; i++){
+ 797   3                              if(up_request[i] == 1 || down_request[i] == 1)
+ 798   3                                      K1 = 1;
+ 799   3                      }
+ 800   2      
+ 801   2                      if((down_request[stair_now] == 1) && (direction == DOWN))
+ 802   2                              K4 = 1;
+ 803   2                      for(i = stair_now-1; i > 0; i--){
+ 804   3                              if(down_request[i] == 1 || up_request[i] == 1)
+ 805   3                                      K2 = 1;
+ 806   3                      }
+ 807   2      
+ 808   2                      // Change State
+ 809   2                      state_convert();
+ 810   2                      state_now = state_next;
+ 811   2      
+ 812   2                      // 采集按键信息
+ 813   2                      if(ctrl == temp){
+ 814   3                              ctrl = getkey();
+ 815   3                              if(ctrl == temp)
+ 816   3                                      continue;
+ 817   3                      }
+ 818   2                      temp = ctrl;
+ 819   2              }
+ 820   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   5225    ----
+   CONSTANT SIZE    =   3124    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     21      31
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      4    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)

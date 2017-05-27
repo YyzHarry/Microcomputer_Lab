@@ -1,0 +1,237 @@
+C51 COMPILER V9.01   RECORD_IN                                                             05/26/2017 19:21:13 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE RECORD_IN
+OBJECT MODULE PLACED IN Record_in.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE Record_in.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include <c8051f020.h>
+   2          #include <stdio.h>
+   3          
+   4          #define SYSCLK 22118400
+   5          #define SPICLK 2000000
+   6          #define SAMPLERATE 8000         //录音采样频率为 8k
+   7          #define length 4096             //记录的长度
+   8          
+   9          //AD 寄存器设置
+  10          sfr16 TMR3RL = 0x92;
+  11          sfr16 TMR3 = 0x94;
+  12          sfr16 ADC0 = 0xbe;
+  13          
+  14          //DA 寄存器设置
+  15          sfr16 RCAP4 = 0xe4;
+  16          sfr16 T4 = 0xf4;
+  17          sfr16 DAC1 = 0xd5;                      //音频输出由 DAC1 驱动
+  18          
+  19          unsigned sample;
+  20          
+  21          unsigned int xdata record[length];
+  22          unsigned itr;
+  23          
+  24          void SYSCLK_Init()
+  25          {
+  26   1              int i;
+  27   1              OSCXCN=0x67;
+  28   1              for(i=0;i<256;i++);
+  29   1              while(!(OSCXCN&0x80));
+  30   1              OSCICN=0x88;
+  31   1      }
+  32          
+  33          void PORT_Init(void)
+  34          {
+  35   1              EMI0CF = 0x1F;
+  36   1              XBR0 = 0x06; // 允许SPI 和UART
+  37   1              XBR2 = 0x42;
+  38   1              P0MDOUT = 0xC0;
+  39   1              P1MDOUT = 0xFF;
+  40   1              P2MDOUT = 0xFF;
+  41   1              P3MDOUT = 0xFF;
+  42   1              P0MDOUT |= 0x15; // TX, SCK, MOSI 设置为推挽输出
+  43   1              P74OUT = 0x20; // p6.7 用作片选信号
+  44   1      }
+  45          
+  46          //AD
+  47          void ADC0_Init (void)
+  48          {
+  49   1              ADC0CN = 0x05;
+  50   1              REF0CN = 0x03;
+  51   1              AMX0SL = 0x01;   // 选择AIN1作为输入
+  52   1              ADC0CF = (SYSCLK/2500000) << 3;
+  53   1              ADC0CF &= ~0x07;
+  54   1              EIE2 &= ~0x02;
+  55   1              AD0EN = 1;
+C51 COMPILER V9.01   RECORD_IN                                                             05/26/2017 19:21:13 PAGE 2   
+
+  56   1      }
+  57          
+  58          void Timer3_Init (int counts)
+  59          {
+  60   1              TMR3CN = 0x02;
+  61   1              TMR3RL = -counts;
+  62   1              TMR3 = 0xffff;
+  63   1              TMR3CN |= 0x04;
+  64   1      }
+  65          
+  66          void Timer3_ISR (void) interrupt 14
+  67          {
+  68   1              //record[itr] = sample;
+  69   1              itr++;
+  70   1              TMR3CN &= 0x7F;
+  71   1      }
+  72          
+  73          void ADC0_ISR (void) interrupt 15       //ADC转换完毕中断
+  74          {
+  75   1              record[itr] = ADC0;      //     sample
+  76   1              AD0INT = 0;
+  77   1      }
+  78          
+  79          //DA
+  80          void Timer4_Init (int counts)
+  81          {
+  82   1              T4CON = 0;
+  83   1              CKCON |= 0x40;
+  84   1              RCAP4 = -counts;
+  85   1              T4 = RCAP4;
+  86   1              EIE2 |= 0x04;
+  87   1              T4CON |= 0x04;
+  88   1      }
+  89          
+  90          void Timer4_ISR (void) interrupt 16
+  91          {
+  92   1              DAC1 = record[itr];
+  93   1              itr++;
+  94   1              T4CON &= ~0x80;
+  95   1      }
+  96          
+  97          void SPI0_Init()
+  98          {
+  99   1              SPI0CFG = 0x07; // 8 位帧大小
+ 100   1              SPI0CN = 0x03; // 主模式，允许SPI 设备
+ 101   1              SPI0CKR = SYSCLK/2/SPICLK;
+ 102   1      }
+ 103          unsigned char SPI_Write(unsigned char v)
+ 104          {
+ 105   1              SPIF = 0; // 清除中断标志
+ 106   1              SPI0DAT = v; // 数据寄存器赋值
+ 107   1              while (SPIF == 0); // 等待发送完成
+ 108   1              return SPI0DAT; // 同时把接收到的结果返回
+ 109   1      }
+ 110          void Timer0_us(int num)
+ 111          {
+ 112   1              int i;
+ 113   1              for(i=0;i<1000*num;i++);        //注意延时长度 vs 10000
+ 114   1              return;
+ 115   1      }
+ 116          void busywait()  //在芯片正处于擦除、写入等操作时等待其完成
+ 117          {
+C51 COMPILER V9.01   RECORD_IN                                                             05/26/2017 19:21:13 PAGE 3   
+
+ 118   1          P6 = 0x00; // 片选有效
+ 119   1              Timer0_us(1);   // 写在里面？？
+ 120   1              while(1){
+ 121   2                      unsigned char v;
+ 122   2                      SPI_Write(0x05);        // 读状态字命令
+ 123   2                      v = SPI_Write(0x00);
+ 124   2                      v = v & 0x1;    // 读取S0
+ 125   2                      if(v == 0)
+ 126   2                              break;
+ 127   2              }
+ 128   1              P6 = 0x80;  // 片选无效
+ 129   1              Timer0_us(1);
+ 130   1      }
+ 131          
+ 132          void main(void){
+ 133   1          int i, j;
+ 134   1              unsigned char c, v, v1;
+ 135   1              long int add;
+ 136   1              WDTCN = 0xde;
+ 137   1              WDTCN = 0xad;
+ 138   1              SYSCLK_Init();
+ 139   1              Timer3_Init(SYSCLK/SAMPLERATE);
+ 140   1              ADC0_Init();
+ 141   1              PORT_Init();
+ 142   1      
+ 143   1              REF0CN = 0x03;
+ 144   1              DAC1CN = 0x97;
+ 145   1              DAC1CN = 0x17;
+ 146   1              Timer4_Init(SYSCLK/SAMPLERATE);
+ 147   1      
+ 148   1      
+ 149   1              P6 = 0x80;                              // 片选无效
+ 150   1              SPI0_Init();                    // 初始化SPI
+ 151   1              //Timer0_us(1000);              // 延时
+ 152   1              //P6 = 0x00;            // 片选有效
+ 153   1              //P6 = 0x80;            // 片选无效
+ 154   1      
+ 155   1              EA = 1;
+ 156   1              EIE2 |= 0x02;
+ 157   1      
+ 158   1          itr = 0;
+ 159   1          add = 0;        // 每段数据长4KB，录制时注意改变起始地址位置！
+ 160   1      
+ 161   1              //目前reset重置
+ 162   1              while (1) {
+ 163   2                      if(itr >= length)
+ 164   2                      {
+ 165   3                              AD0EN = 0;                         //ADC关闭
+ 166   3                              /*
+ 167   3                  for (i=0; i<length; i++){
+ 168   3                      v1 = record[i];  // 继续读入要写入的字节内容
+ 169   3                                      P6 = 0x00;          // 片选有效
+ 170   3                                      Timer0_us(1);
+ 171   3                                      SPI_Write(0x06);    // 写入允许命令
+ 172   3                                      Timer0_us(1);
+ 173   3                                      P6 = 0x80;          // 片选无效
+ 174   3                                      Timer0_us(1);
+ 175   3                                      P6 = 0x0;           // 再次设置片选
+ 176   3                                      Timer0_us(1);
+ 177   3                                      SPI_Write(0x02);    // 写命令
+ 178   3                                      SPI_Write((add & 0x00FF0000) >> 16);
+ 179   3                                      SPI_Write((add & 0x0000FF00) >> 8);
+C51 COMPILER V9.01   RECORD_IN                                                             05/26/2017 19:21:13 PAGE 4   
+
+ 180   3                                      SPI_Write(add & 0x00FF);        // 24 位地址
+ 181   3                                      SPI_Write(v1);      // 数据
+ 182   3                                      Timer0_us(1);
+ 183   3                                      P6 = 0x80;          // 片选无效
+ 184   3                                      Timer0_us(1);
+ 185   3      
+ 186   3                                      busywait();         // 读取状态等待写入完成
+ 187   3                                      add++;
+ 188   3                  }
+ 189   3                              */
+ 190   3      
+ 191   3                              DAC1CN = 0x97;              //DAC打开
+ 192   3                              itr = 0;
+ 193   3                              while(itr < length);
+ 194   3                              DAC1CN = 0x17;              //DAC关闭
+ 195   3      
+ 196   3                              while(1);               // wait
+ 197   3      
+ 198   3                              itr = 0;
+ 199   3                              AD0EN = 1;              //ADC打开
+ 200   3                      }
+ 201   2      
+ 202   2              }
+ 203   1      }
+*** WARNING C280 IN LINE 133 OF RECORD_IN.C: 'i': unreferenced local variable
+*** WARNING C280 IN LINE 133 OF RECORD_IN.C: 'j': unreferenced local variable
+*** WARNING C280 IN LINE 134 OF RECORD_IN.C: 'c': unreferenced local variable
+*** WARNING C280 IN LINE 134 OF RECORD_IN.C: 'v': unreferenced local variable
+*** WARNING C280 IN LINE 134 OF RECORD_IN.C: 'v1': unreferenced local variable
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    450    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   8192    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      4      12
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  5 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,268 @@
+C51 COMPILER V9.01   TFT                                                                   05/23/2017 18:52:58 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE TFT
+OBJECT MODULE PLACED IN tft.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE tft.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include <C8051F020.h>
+   2          #include "font.h"
+   3          
+   4          #define YELLOW 0xFF00
+   5          
+   6          unsigned char xdata reset _at_ (0x8003);
+   7          unsigned char xdata cmd _at_ (0x8002);
+   8          unsigned char xdata mydata _at_ (0x9002);
+   9          
+  10          void Delay(int k)
+  11          {
+  12   1          int i;
+  13   1          for (i = 0; i < k; ++i);
+  14   1      }
+  15          
+  16          void SYSCLK_Init()
+  17          {
+  18   1          OSCXCN = 0x67;  // enabled external crystal
+  19   1          while (!(OSCXCN & 0x80));  // wait for stable
+  20   1          OSCICN = 0x88;  // use external crystal
+  21   1      }
+  22          
+  23          /* init the emif using the lower port  */
+  24          void EMIF_Low(void)
+  25          {
+  26   1          SYSCLK_Init();
+  27   1          EMI0CF = 0x1F; // non-multiplexed mode, external only
+  28   1          XBR2 = 0x42;    // Enable xbr
+  29   1          P0MDOUT = 0xC0;
+  30   1          P1MDOUT = 0xFF;
+  31   1          P2MDOUT = 0xFF;
+  32   1          P3MDOUT = 0xFF;
+  33   1      }
+  34          
+  35          void lcd_init9481(void)
+  36          {
+  37   1          reset = 1;
+  38   1          Delay(200);
+  39   1          cmd = 0x11; // Exit from sleeping
+  40   1          Delay(3000);
+  41   1          cmd = 0xD0; // Power Setting
+  42   1          mydata = 0x07;
+  43   1          mydata = 0x41;
+  44   1          mydata = 0x1D;
+  45   1          mydata = 0x0D;
+  46   1      
+  47   1          cmd = 0xD1; // VCOM Control
+  48   1          mydata = 0x00;
+  49   1          mydata = 0x2B;
+  50   1          mydata = 0x1F;
+  51   1      
+  52   1          cmd = 0x0C; // get pixel format (why get?)
+  53   1          mydata = 0x55;
+  54   1          cmd = 0x3A; // set pixel format
+  55   1          mydata = 0x55; // 16bit/pixel
+C51 COMPILER V9.01   TFT                                                                   05/23/2017 18:52:58 PAGE 2   
+
+  56   1          cmd = 0xB4; // Display mode;
+  57   1          mydata = 0;
+  58   1      
+  59   1          cmd= 0xC0; // Panel Driving Setting
+  60   1          mydata = 0;
+  61   1          mydata = 0x3B;
+  62   1          mydata = 0x0;
+  63   1          mydata = 0x2;
+  64   1          mydata = 0x11;
+  65   1          mydata = 0;
+  66   1      
+  67   1          cmd = 0xC5; // Frame rate and Inversion Control
+  68   1          mydata = 0x03;
+  69   1      
+  70   1          cmd = 0xC8;  // Gamma Setting
+  71   1          mydata = 0;
+  72   1          mydata = 14;
+  73   1          mydata = 0x33;
+  74   1          mydata = 0x10;
+  75   1          mydata = 0x00;
+  76   1          mydata = 0x16;
+  77   1          mydata = 0x44;
+  78   1          mydata = 0x36;
+  79   1          mydata = 0x77;
+  80   1          mydata = 0x00;
+  81   1          mydata = 0x0F;
+  82   1          mydata = 0x00;
+  83   1      
+  84   1          cmd = 0xF3;
+  85   1          mydata = 0x40;
+  86   1          mydata = 0x0A;
+  87   1      
+  88   1          cmd = 0x36; // Address Mode
+  89   1          mydata = 0x0A;
+  90   1      
+  91   1          cmd = 0xF0;
+  92   1          mydata = 0x08;
+  93   1      
+  94   1          cmd = 0xF6;
+  95   1          mydata = 0x84;
+  96   1          cmd = 0xF7;
+  97   1          mydata = 0x80;
+  98   1          cmd = 0x36;  // Address Mode;
+  99   1          mydata = 0x0A;
+ 100   1      
+ 101   1          Delay(3000);
+ 102   1          cmd = 0x29;  // Set display on
+ 103   1      }
+ 104          
+ 105          void lcd_init9486(void) /* ZHA */
+ 106          {
+ 107   1          reset = 1;
+ 108   1          Delay(200);
+ 109   1          cmd = 0xF2;
+ 110   1          mydata = 0x18;
+ 111   1          mydata = 0xA3;
+ 112   1          mydata = 0x12;
+ 113   1          mydata = 0x02;
+ 114   1          mydata = 0xB2;
+ 115   1          mydata = 0x12;
+ 116   1          mydata = 0xFF;
+ 117   1          mydata = 0x10;
+C51 COMPILER V9.01   TFT                                                                   05/23/2017 18:52:58 PAGE 3   
+
+ 118   1          mydata = 0x00;
+ 119   1          cmd = 0xF8;
+ 120   1          mydata = 0x21;
+ 121   1          mydata = 0x04;
+ 122   1          cmd = 0xF9;
+ 123   1          mydata = 0x00;
+ 124   1          mydata = 0x08;
+ 125   1          cmd = 0x36;
+ 126   1          mydata = 0x08;
+ 127   1          cmd = 0x3A;
+ 128   1          mydata = 0x05;
+ 129   1          cmd = 0xB4;
+ 130   1          mydata = 0x01;//0x00
+ 131   1          cmd = 0xB6;
+ 132   1          mydata = 0x02;
+ 133   1          mydata = 0x22;
+ 134   1          cmd = 0xC1;
+ 135   1          mydata = 0x41;
+ 136   1          cmd = 0xC5;
+ 137   1          mydata = 0x00;
+ 138   1          mydata = 0x07;//0x18
+ 139   1          cmd = 0xE0;
+ 140   1          mydata = 0x0F;
+ 141   1          mydata = 0x1F;
+ 142   1          mydata = 0x1C;
+ 143   1          mydata = 0x0C;
+ 144   1          mydata = 0x0F;
+ 145   1          mydata = 0x08;
+ 146   1          mydata = 0x48;
+ 147   1          mydata = 0x98;
+ 148   1          mydata = 0x37;
+ 149   1          mydata = 0x0A;
+ 150   1          mydata = 0x13;
+ 151   1          mydata = 0x04;
+ 152   1          mydata = 0x11;
+ 153   1          mydata = 0x0D;
+ 154   1          mydata = 0x00;
+ 155   1          cmd = 0xE1;
+ 156   1          mydata = 0x0F;
+ 157   1          mydata = 0x32;
+ 158   1          mydata = 0x2E;
+ 159   1          mydata = 0x0B;
+ 160   1          mydata = 0x0D;
+ 161   1          mydata = 0x05;
+ 162   1          mydata = 0x47;
+ 163   1          mydata = 0x75;
+ 164   1          mydata = 0x37;
+ 165   1          mydata = 0x06;
+ 166   1          mydata = 0x10;
+ 167   1          mydata = 0x03;
+ 168   1          mydata = 0x24;
+ 169   1          mydata = 0x20;
+ 170   1          mydata = 0x00;
+ 171   1          cmd = 0x11;
+ 172   1          Delay(200);
+ 173   1          cmd = 0x29;
+ 174   1      }
+ 175          
+ 176          void dis_color(unsigned int c)
+ 177          {
+ 178   1          int i, j;
+ 179   1           cmd = 0x2C; // start write
+C51 COMPILER V9.01   TFT                                                                   05/23/2017 18:52:58 PAGE 4   
+
+ 180   1          for (i = 0; i < 480; ++i)
+ 181   1              for (j = 0; j < 320; ++j) {
+ 182   2                  mydata = c >> 8;
+ 183   2                  mydata = c & 0xFF;
+ 184   2              }
+ 185   1      }
+ 186          
+ 187          void show_char(unsigned int x, unsigned int y, unsigned int color, unsigned char f)
+ 188          {
+ 189   1          unsigned char i, j, c;
+ 190   1          cmd = 0x2A; // set column address
+ 191   1          mydata = (x >> 8) & 1;
+ 192   1          mydata = (x & 0xFF);
+ 193   1          mydata = ((x + 7) >> 8) & 1;
+ 194   1          mydata = (x + 7) & 0xFF;
+ 195   1          cmd = 0x2B; // set page address
+ 196   1          mydata = (y >> 8) & 1;
+ 197   1          mydata = (y & 0xFF);
+ 198   1          mydata = ((y + 11) >> 8) & 1;
+ 199   1          mydata = (y + 11) & 0xFF;
+ 200   1          cmd = 0x2C;
+ 201   1          for (i = 0; i < 12; ++i) {
+ 202   2              c = font_8x12[f][i];
+ 203   2              for (j = 0; j < 8; ++j) {
+ 204   3                  if (c & 1) {
+ 205   4                      mydata = color >> 8;
+ 206   4                      mydata = color & 0xFF;
+ 207   4                  } else {
+ 208   4                      mydata = 0xff;
+ 209   4                      mydata = 0;
+ 210   4                  }
+ 211   3                  c = c >> 1;
+ 212   3              }
+ 213   2          }
+ 214   1      }
+ 215          
+ 216          void refresh_scrn()             // Ë¢ÐÂÆÁÄ»
+ 217          {
+ 218   1              int i, j;
+ 219   1              for (i=0; i<359; i+=8){
+ 220   2                      for (j=0; j<479; j+=8){
+ 221   3                              show_char(i, j, YELLOW, 0xDB);
+ 222   3                      }
+ 223   2              }
+ 224   1      }
+ 225          
+ 226          void main(void)
+ 227          {
+ 228   1          WDTCN = 0xde;
+ 229   1          WDTCN = 0xad; // Disable watchdog
+ 230   1          EMIF_Low();
+ 231   1          EMI0TC = 0x41;
+ 232   1          lcd_init9486();
+ 233   1          dis_color(0xFF00);
+ 234   1              refresh_scrn();
+ 235   1          while (1) {
+ 236   2          }
+ 237   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    874    ----
+C51 COMPILER V9.01   TFT                                                                   05/23/2017 18:52:58 PAGE 5   
+
+   CONSTANT SIZE    =   3072    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      13
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
