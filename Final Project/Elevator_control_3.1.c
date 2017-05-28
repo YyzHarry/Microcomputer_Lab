@@ -26,7 +26,7 @@ unsigned int xdata record[length];
 
 unsigned sample;
 unsigned itr;
-
+long int add;
 
 // Lcd Display Definition
 const char code first_up[]={'1','s','t',' ','F','l','o','o','r',' ','U','P',' ',' ',' ',' '};
@@ -209,7 +209,7 @@ void ADC0_Init (void)
 	ADC0CF = (SYSCLK/2500000) << 3;
 	ADC0CF &= ~0x07;
 	EIE2 &= ~0x02;
-	AD0EN = 1;
+	// AD0EN = 1;
 }
 
 void Timer3_Init (int counts)
@@ -728,7 +728,7 @@ void State_transition(void)
                     state_next = F6;
 			}
 			else if(C1 && !C2)
-                state_next = F2
+                state_next = F2;
 			else if(C2 && !C1)
                 state_next = F6;
 			else
@@ -759,22 +759,32 @@ void State_transition(void)
 			else{
                 // Bug HERE! -- Fixed, needs Check
 				if(direction == UP){
-                    up_request[stair_now] = 0;
+                    if(up_request[stair_now])
+                        up_request[stair_now] = 0;
+                    else{
+                        down_request[stair_now] = 0;    // 说明电梯方向反转
+                        direction = DOWN;
+                    }
                     /*
                     direction = DOWN;
                     for(i = stair_now+1; i <= STAIR_SUM; i++){
-                        if(up_request[i]){
+                        if(up_request[i] || down_request[i]){
                             direction = UP;
                             break;
                         }
                     }*/
 				}
 				else if(direction == DOWN){
-                    down_request[stair_now] = 0;
+                    if(down_request[stair_now])
+                        down_request[stair_now] = 0;
+                    else{
+                        up_request[stair_now] = 0;    // 说明电梯方向反转
+                        direction = UP;
+                    }
                     /*
                     direction = UP;
                     for(i = stair_now-1; i >= 1; i--){
-                        if(up_request[i]){
+                        if(up_request[i] || down_request[i]){
                             direction = DOWN;
                             break;
                         }
@@ -830,48 +840,11 @@ void TIMER0_ISR (void) interrupt 1
 
 			if((direction == UP && stair_now != 6)||(stair_now == 1))
 				Display_change(stair_now,OUTSIDE_UP,BLACK);
-			else if((direction == DOWN && stair_now != 1)||(stair_now == 6))
+			if((direction == DOWN && stair_now != 1)||(stair_now == 6))
 				Display_change(stair_now,OUTSIDE_DOWN,BLACK);
 
 
-            // F5 状态说明电梯到达某一层，需要进行语音提示
-            // 由于xdata内存限制，每次先将FLASH中内容存到xdata，再进行播放
-            // PLUG DATA OUT FIRST
-            add = 2*length*(stair_now-1);        // 每段数据长32KB，录制时注意改变起始地址位置！
-            for (j=0; j<length; j++){
-                P6 = 0x00; // 片选有效
-				Timer0_us(1);
-				SPI_Write(0x03); // 读数据命令
-				SPI_Write((add & 0x00FF0000) >> 16);
-				SPI_Write((add & 0x0000FF00) >> 8);
-				SPI_Write(add & 0x00FF); // 24 位地址
-				Timer0_us(1);
-
-                high = SPI_Write(0x00);         // 读高位
-                add++;
-                P6 = 0x80; // 片选无效
-
-                P6 = 0x00; // 片选有效
-				Timer0_us(1);
-				SPI_Write(0x03); // 读数据命令
-				SPI_Write((j & 0x00FF0000) >> 16);
-				SPI_Write((j & 0x0000FF00) >> 8);
-				SPI_Write(j & 0x00FF); // 24 位地址
-				Timer0_us(1);
-
-                low = SPI_Write(0x00);         // 读低位
-                add++;
-                P6 = 0x80; // 片选无效
-
-				record[j] = (unsigned int)(((unsigned int)high)<<8 + low);      // 写入XDATA
-            }
-
-            DAC1CN = 0x97;		   // DAC打开
-			itr = 0;
-			while(itr < length);
-			DAC1CN = 0x17;		   // DAC关闭
-
-
+			// 注意这里不能用DAC中断，因为优先级问题!
 			// 之后实现开门+关门显示
 			Display_change(stair_now,OPEN_DOOR,BLACK);
 			timer_ms(500);
@@ -1247,6 +1220,48 @@ void main(void){
 			if(down_request[i] == 1 || up_request[i] == 1)
 				C2 = 1;
 		}
+
+
+        // PLAY VOICE DATA, ONLY ONCE!
+		if(state_now == F5){
+            // F5 状态说明电梯到达某一层，需要进行语音提示
+            // 由于xdata内存限制，每次先将FLASH中内容存到xdata，再进行播放
+            // PLUG DATA OUT FIRST
+            add = 2*length*(stair_now-1);        // 每段数据长32KB，录制时注意改变起始地址位置！
+            for (j=0; j<length; j++){
+                P6 = 0x00; // 片选有效
+				Timer0_us(1);
+				SPI_Write(0x03); // 读数据命令
+				SPI_Write((add & 0x00FF0000) >> 16);
+				SPI_Write((add & 0x0000FF00) >> 8);
+				SPI_Write(add & 0x00FF); // 24 位地址
+				Timer0_us(1);
+
+                high = SPI_Write(0x00);         // 读高位
+                add++;
+                P6 = 0x80; // 片选无效
+
+                P6 = 0x00; // 片选有效
+				Timer0_us(1);
+				SPI_Write(0x03); // 读数据命令
+				SPI_Write((j & 0x00FF0000) >> 16);
+				SPI_Write((j & 0x0000FF00) >> 8);
+				SPI_Write(j & 0x00FF); // 24 位地址
+				Timer0_us(1);
+
+                low = SPI_Write(0x00);         // 读低位
+                add++;
+                P6 = 0x80; // 片选无效
+
+				record[j] = (unsigned int)(((unsigned int)high)<<8 + low);      // 写入XDATA
+            }
+
+            DAC1CN = 0x97;		   // DAC打开
+			itr = 0;
+			while(itr < length);
+			DAC1CN = 0x17;		   // DAC关闭
+		}
+
 
 		// Change State
 		State_transition();
