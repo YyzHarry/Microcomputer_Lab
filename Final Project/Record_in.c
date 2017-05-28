@@ -3,8 +3,10 @@
 
 #define SYSCLK 22118400
 #define SPICLK 2000000
+#define NOKEY 255
 #define SAMPLERATE 8000		//录音采样频率为 8k
 #define length 16384		//记录的长度
+typedef unsigned char uchar;
 
 //AD 寄存器设置
 sfr16 TMR3RL = 0x92;
@@ -132,6 +134,8 @@ void busywait()	 //在芯片正处于擦除、写入等操作时等待其完成
 }
 
 void main(void){
+	uchar temp = NOKEY;		// 初始化NOKEY, 否则0与按键冲突
+	uchar ctrl = NOKEY;
     int i, j, flag=0;
 	unsigned char c, v, v1;
 	long int add;
@@ -159,7 +163,7 @@ void main(void){
 
     itr = 0;
     add = 0;        // 每段数据长32KB，录制时注意改变起始地址位置！
-
+	
     // REFRESH WHOLE FLASH
     P6 = 0x00; // 片选有效
 	Timer0_us(1);
@@ -172,7 +176,7 @@ void main(void){
 	SPI_Write(0x60); // 整片清除命令
 	Timer0_us(1);
 	P6 = 0x80; // 片选无效
-
+	
     // 录音并存入FLASH
 	for (i=0; i<6; i++) {
 
