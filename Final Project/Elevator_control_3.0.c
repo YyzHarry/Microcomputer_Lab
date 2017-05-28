@@ -8,7 +8,7 @@
 #define CLR 15
 #define SPICLK 2000000
 #define SAMPLERATE 8000		//录音采样频率为 8k
-#define length 4096 		//记录的长度
+#define length 16384 		//记录的长度
 typedef unsigned char uchar;
 
 // AD 寄存器设置
@@ -22,7 +22,7 @@ sfr16 T4 = 0xf4;
 sfr16 DAC1 = 0xd5;			//音频输出由 DAC1 驱动
 
 // 音频设置，从FLASH中取出已存好的数据（1~6楼提示音），DAC播放
-unsigned int xdata record[6*length];
+unsigned int xdata record[length];
 
 unsigned sample;
 unsigned int itr;
@@ -134,7 +134,6 @@ void SYSCLK_Init (void)
 
 void PORT_Init (void)
 {
-	SYSCLK_Init();
 	XBR0 = 0x06; // 允许 SPI 和 UART
 	P0MDOUT = 0xC0; // 设置总线相关端口为推挽输出 P0.6 和 P0.7
 	P0MDOUT |= 0x15; // TX, SCK, MOSI 设置为推挽输出
@@ -246,16 +245,9 @@ void Timer4_Init (int counts)
 
 void Timer4_ISR (void) interrupt 16
 {
-    if(!DAC_FLAG){              // 录音回放阶段
-        DAC1 = record[itr];
-        itr++;
-        T4CON &= ~0x80;
-    }
-	else{                       // 电梯播放阶段
-        DAC1 = record[length*(stair_now-1) + itr];
-        itr++;
-        T4CON &= ~0x80;
-	}
+    DAC1 = record[itr];
+    itr++;
+    T4CON &= ~0x80;
 }
 
 void SPI0_Init()
@@ -736,7 +728,7 @@ void State_transition(void)
                     state_next = F6;
 			}
 			else if(C1 && !C2)
-                state_next = F2
+                state_next = F2;
 			else if(C2 && !C1)
                 state_next = F6;
 			else
@@ -767,22 +759,32 @@ void State_transition(void)
 			else{
                 // Bug HERE! -- Fixed, needs Check
 				if(direction == UP){
-                    up_request[stair_now] = 0;
+                    if(up_request[stair_now])
+                        up_request[stair_now] = 0;
+                    else{
+                        down_request[stair_now] = 0;    // 说明电梯方向反转
+                        direction = DOWN;
+                    }
                     /*
                     direction = DOWN;
                     for(i = stair_now+1; i <= STAIR_SUM; i++){
-                        if(up_request[i]){
+                        if(up_request[i] || down_request[i]){
                             direction = UP;
                             break;
                         }
                     }*/
 				}
 				else if(direction == DOWN){
-                    down_request[stair_now] = 0;
+                    if(down_request[stair_now])
+                        down_request[stair_now] = 0;
+                    else{
+                        up_request[stair_now] = 0;    // 说明电梯方向反转
+                        direction = UP;
+                    }
                     /*
                     direction = UP;
                     for(i = stair_now-1; i >= 1; i--){
-                        if(up_request[i]){
+                        if(up_request[i] || down_request[i]){
                             direction = DOWN;
                             break;
                         }
@@ -834,19 +836,13 @@ void TIMER0_ISR (void) interrupt 1
 		else if(state_now == F5){
 			state_next = F1;    // 处理结束后回到F1状态
 
+			// Displaying Bug here!
 			if((direction == UP && stair_now != 6)||(stair_now == 1))
 				Display_change(stair_now,OUTSIDE_UP,BLACK);
-			else if((direction == DOWN && stair_now != 1)||(stair_now == 6))
+			if((direction == DOWN && stair_now != 1)||(stair_now == 6))
 				Display_change(stair_now,OUTSIDE_DOWN,BLACK);
 
-
-            // F5 状态说明电梯到达某一层，需要进行语音提示
-            DAC1CN = 0x97;		   // DAC打开
-			itr = 0;
-			while(itr < length);
-			DAC1CN = 0x17;		   // DAC关闭
-
-
+			// 注意这里不能用DAC中断，因为优先级问题!
 			// 之后实现开门+关门显示
 			Display_change(stair_now,OPEN_DOOR,BLACK);
 			timer_ms(500);
@@ -888,29 +884,23 @@ void main(void){
     // 每段数据长8KB，录制时注意改变起始地址位置！
     AD0EN = 0;			   // ADC关闭
 
-    while(1){
-        if(6 == flag) break;
+    // 采集按键信息
+	while(ctrl == temp){
+		ctrl = getkey();
+	}
+	itr = 0;
+    AD0EN = 1;		        // ADC打开
+    while(itr < length);
+    AD0EN = 0;			    // ADC关闭
+    DAC1CN = 0x97;		    // DAC打开
+    itr = 0;
+	while(itr < length);
+	DAC1CN = 0x17;		    // DAC关闭
 
-        // 采集按键信息
-		while(ctrl == temp){
-			ctrl = getkey();
-		}
-		itr = flag*length;
-        AD0EN = 1;		        // ADC打开
-        while(itr < (flag+1)*length);
-        AD0EN = 0;			    // ADC关闭
-        DAC1CN = 0x97;		    // DAC打开
-        itr = flag*length;
-		while(itr < (flag+1)*length);
-		DAC1CN = 0x17;		    // DAC关闭
+    ctrl = NOKEY;
+	temp = NOKEY;
 
-        // WRITE INTO XDATA
-        flag++;
-
-		ctrl = NOKEY;
-    }
-
-    DAC_FLAG = 1；      // 录音结束
+    DAC_FLAG = 1;	    // 录音结束
 	P74OUT = 0x30;      // P6_out
 
 	// 计数器0的设置
@@ -1245,6 +1235,16 @@ void main(void){
 			if(down_request[i] == 1 || up_request[i] == 1)
 				C2 = 1;
 		}
+
+		// PLAY VOICE DATA, ONLY ONCE!
+		if(state_now == F5){
+			// F5 状态说明电梯到达某一层，需要进行语音提示
+            DAC1CN = 0x97;		   // DAC打开
+			itr = 0;
+			while(itr < length);
+			DAC1CN = 0x17;		   // DAC关闭
+		}
+
 
 		// Change State
 		State_transition();
