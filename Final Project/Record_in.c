@@ -8,6 +8,8 @@
 #define length 16384		//记录的长度
 typedef unsigned char uchar;
 
+long long int add;
+
 //AD 寄存器设置
 sfr16 TMR3RL = 0x92;
 sfr16 TMR3 = 0x94;
@@ -21,7 +23,7 @@ sfr16 DAC1 = 0xd5;			//音频输出由 DAC1 驱动
 unsigned sample;
 
 unsigned int xdata record[length];
-unsigned itr;
+unsigned int itr;
 
 void SYSCLK_Init()
 {
@@ -34,7 +36,6 @@ void SYSCLK_Init()
 
 void PORT_Init(void)
 {
-	SYSCLK_Init();
 	XBR0 = 0x06; // 允许 SPI 和 UART
 	P0MDOUT = 0xC0; // 设置总线相关端口为推挽输出 P0.6 和 P0.7
 	P0MDOUT |= 0x15; // TX, SCK, MOSI 设置为推挽输出
@@ -53,10 +54,10 @@ void ADC0_Init (void)
 	ADC0CN = 0x05;
 	REF0CN = 0x03;
 	AMX0SL = 0x01;	 // 选择AIN1作为输入
-	ADC0CF = (SYSCLK/2500000) << 3;
+	ADC0CF = (SYSCLK/2500000) << 3; 
 	ADC0CF &= ~0x07;
 	EIE2 &= ~0x02;
-	// AD0EN = 1;
+	AD0EN = 1;
 }
 
 void Timer3_Init (int counts)
@@ -88,12 +89,12 @@ void Timer4_Init (int counts)
 	RCAP4 = -counts;
 	T4 = RCAP4;
 	EIE2 |= 0x04;
-	T4CON |= 0x04;
+	T4CON |= 0x04;				
 }
 
 void Timer4_ISR (void) interrupt 16
 {
-	DAC1 = record[itr];
+	DAC1 = record[itr];	
 	itr++;
 	T4CON &= ~0x80;
 }
@@ -114,7 +115,7 @@ unsigned char SPI_Write(unsigned char v)
 void Timer0_us(int num)
 {
 	int i;
-	for(i=0;i<1000*num;i++);	//注意延时长度 vs 10000
+	for(i=0;i<10*num;i++);	//注意延时长度 vs 10000
 	return;
 }
 void busywait()	 //在芯片正处于擦除、写入等操作时等待其完成
@@ -132,15 +133,41 @@ void busywait()	 //在芯片正处于擦除、写入等操作时等待其完成
 	P6 = 0x80;  // 片选无效
 	Timer0_us(1);
 }
+void Delay(int num)
+{
+	int i;
+	for(i=0;i<num;i++);
+	return;
+}
+uchar getkey()
+{
+	uchar i;
+	uchar key;
+	const uchar code dec[] = {0, 0, 1, 0, 2, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0};
+	const uchar code trans[] = {0xC, 9, 5, 1, 0xD, 0, 6, 2, 0xE, 0xA, 7, 3, 0xF, 0xB, 8, 4};
+
+	P4 = 0x0F;
+	Delay(100);
+	i = ~P4 & 0x0F;
+	if (i == 0) return NOKEY;
+	key = dec[i] * 4;
+	Delay(1000);
+	P4 = 0xF0;
+	Delay(100);
+	i = ~P4;
+	i >>= 4;
+	if (i == 0) return NOKEY;
+	key = key + dec[i];
+	key = trans[key];
+	return key;
+}
 
 void main(void){
 	uchar temp = NOKEY;		// 初始化NOKEY, 否则0与按键冲突
 	uchar ctrl = NOKEY;
-    int i, j, flag=0;
-	unsigned char c, v, v1;
-	long int add;
+    int i, j;
 	WDTCN = 0xde;
-	WDTCN = 0xad;
+	WDTCN = 0xad;   // 禁止看门狗
 	SYSCLK_Init();
 	Timer3_Init(SYSCLK/SAMPLERATE);
 	ADC0_Init();
@@ -160,11 +187,12 @@ void main(void){
 
 	EA = 1;
 	EIE2 |= 0x02;
+	AD0EN = 0;
 
     itr = 0;
     add = 0;        // 每段数据长32KB，录制时注意改变起始地址位置！
 	
-    // REFRESH WHOLE FLASH
+	// REFRESH WHOLE FLASH
     P6 = 0x00; // 片选有效
 	Timer0_us(1);
 	SPI_Write(0x06); // 写入允许命令
@@ -176,9 +204,9 @@ void main(void){
 	SPI_Write(0x60); // 整片清除命令
 	Timer0_us(1);
 	P6 = 0x80; // 片选无效
-	
+
     // 录音并存入FLASH
-	for (i=0; i<6; i++) {
+	for(i = 0; i < 6; i++){
 
 		// 采集按键信息
 		while(ctrl == temp){
@@ -207,7 +235,7 @@ void main(void){
 			SPI_Write((add & 0x00FF0000) >> 16);
 			SPI_Write((add & 0x0000FF00) >> 8);
 			SPI_Write(add & 0x00FF); // 24 位地址
-			SPI_Write((record[j + i*length] & 0x0000FF00)>> 8);     // 写入高位
+			SPI_Write((record[j] & 0x0000FF00)>> 8);     // 写入高位
 			Timer0_us(1);
 			P6 = 0x80; // 片选无效
 			busywait(); // 读取状态等待写入完成
@@ -225,7 +253,7 @@ void main(void){
 			SPI_Write((add & 0x00FF0000) >> 16);
 			SPI_Write((add & 0x0000FF00) >> 8);
 			SPI_Write(add & 0x00FF); // 24 位地址
-			SPI_Write(record[j + i*length] & 0x00FF);     // 写入低位
+			SPI_Write(record[j] & 0x00FF);     // 写入低位
 			Timer0_us(1);
             P6 = 0x80; // 片选无效
 			busywait(); // 读取状态等待写入完成
