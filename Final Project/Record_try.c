@@ -103,25 +103,7 @@ void Timer3_ISR (void) interrupt 14
 }
 
 void ADC0_ISR (void) interrupt 15	//ADC转换完毕中断
-{		add++; 
-		P6 = 0x00; // 片选有效
-				Timer0_us(1);
-				SPI_Write(0x06); // 写入允许命令
-				Timer0_us(1);
-				P6 = 0x80; // 片选无效
-				Timer0_us(1);
-				P6 = 0x0; // 再次设置片选
-				Timer0_us(1);
-				SPI_Write(0x02); // 写命令
-				SPI_Write((add & 0x00FF0000) >> 16);
-				SPI_Write((add & 0x0000FF00) >> 8);
-				SPI_Write(add & 0x00FF); // 24 位地址
-				SPI_Write(ADC0); // 数据
-				Timer0_us(1);
-				P6 = 0x80; // 片选无效
-				Timer0_us(1);
-				 
-				busywait(); // 读取状态等待写入完成
+{
 	//record[itr] = ADC0;	 //	sample
 	AD0INT = 0;
 }
@@ -146,7 +128,8 @@ void Timer4_ISR (void) interrupt 16
 
 
 void main (void) {
-	int i;
+	int i, j, k;
+	unsigned char low, high;
 	add = 0;
 	WDTCN = 0xde;
 	WDTCN = 0xad;
@@ -160,39 +143,47 @@ void main (void) {
 	DAC1CN = 0x17;
 	Timer4_Init(SYSCLK/SAMPLERATE); 
 	
+	P6 = 0x80; 				// 片选无效
+	SPI0_Init(); 			// 初始化SPI
+	//Timer0_us(1000); 		// 延时
+	//P6 = 0x00; 		// 片选有效
+	//P6 = 0x80; 		// 片选无效
 	EA = 1;
 	EIE2 |= 0x02;
+
+	P74OUT = 0x30;      // P6_out
 	
     itr = 0;
-	//目前reset重置
-	while (1) {
-		if(itr >= length)
-		{
-			AD0EN = 0;			   //ADC关闭
-			add2 = 0;
-			for (i=0;i<length;i++){
-				P6 = 0x00; // 片选有效
-				Timer0_us(1);
-				SPI_Write(0x03); // 读数据命令
-				SPI_Write((add & 0x00FF0000) >> 16);
-				SPI_Write((add & 0x0000FF00) >> 8);
-				SPI_Write(add & 0x00FF); // 24 位地址
-				Timer0_us(1);
-					 			
-				record[i] = SPI_Write(0x00);
-				Timer0_us(1);
-				busywait();
-				P6 = 0x80; // 片选无效
+
+	for (i=0;i<6;i++){
+		add = 0;        // 每段数据长32KB，录制时注意改变起始地址位置！
+
+            P6 = 0x00; // 片选有效
+			Timer0_us(1);
+			SPI_Write(0x03); // 读数据命令
+			SPI_Write((add & 0x00FF0000) >> 16);
+			SPI_Write((add & 0x0000FF00) >> 8);
+			SPI_Write(add & 0x00FF); // 24 位地址
+			Timer0_us(1);
+			       
+			for (k=0; k<length; k++){
+				for (j=0; j<2; j++){
+					if (!j){
+						high = SPI_Write(0x00);         // 读高位
+	                	record[k] = (high << 8);
+					}
+					else{
+						low = SPI_Write(0x00);         // 读低位
+						record[k] += low;
+					}
+					Timer0_us(1);
+	            }
 			}
-			DAC1CN = 0x97;		   //DAC打开
+			P6 = 0x80; 			   // 片选无效
+
+            DAC1CN = 0x97;		   // DAC打开
 			itr = 0;
 			while(itr < length);
-			DAC1CN = 0x17;		   //DAC关闭
-			//while(1);
-
-			itr = 0;
-			AD0EN = 1;		//ADC打开
-		}
-		
+			DAC1CN = 0x17;		   // DAC关闭
 	}
 }
