@@ -134,17 +134,15 @@ void SYSCLK_Init (void)
 
 void PORT_Init (void)
 {
-	SYSCLK_Init();
-	XBR0 = 0x06; // 允许 SPI 和 UART
-	P0MDOUT = 0xC0; // 设置总线相关端口为推挽输出 P0.6 和 P0.7
+	EMI0CF = 0x1F;
+	XBR0 = 0x06; // 允许SPI 和UART
+	XBR2 = 0x42;
+	P0MDOUT = 0xC0;
+	P1MDOUT = 0xFF;
+	P2MDOUT = 0xFF;
+	P3MDOUT = 0xFF;
 	P0MDOUT |= 0x15; // TX, SCK, MOSI 设置为推挽输出
 	P74OUT = 0x20; // p6.7 用作片选信号
-	EMI0CF = 0x1F; // 非复用总线，不使用内部 XRAM
-	XBR2 = 0x42; // 使用 P0-P3 作为总线，允许XBR
-	P1MDOUT = 0xFF; // 高位地址
-	P2MDOUT = 0xFF; // 低位地址
-	P3MDOUT = 0xFF; // 数据总线
-	P74OUT |= 0x80;	 //推挽输出
 }
 
 void Delay(int num)
@@ -209,7 +207,7 @@ void ADC0_Init (void)
 	ADC0CF = (SYSCLK/2500000) << 3;
 	ADC0CF &= ~0x07;
 	EIE2 &= ~0x02;
-	// AD0EN = 1;
+	AD0EN = 1;
 }
 
 void Timer3_Init (int counts)
@@ -229,7 +227,7 @@ void Timer3_ISR (void) interrupt 14
 
 void ADC0_ISR (void) interrupt 15	//ADC转换完毕中断
 {
-	record[itr] = ADC0;	 //	sample
+	//record[itr] = ADC0;	 //	sample
 	AD0INT = 0;
 }
 
@@ -269,7 +267,7 @@ unsigned char SPI_Write(unsigned char v)
 void Timer0_us(int num)
 {
 	int i;
-	for(i=0;i<1000*num;i++);	//注意延时长度 vs 10000
+	for(i=0;i<100*num;i++);	//注意延时长度 vs 10000
 	return;
 }
 
@@ -764,6 +762,7 @@ void State_transition(void)
                     else{
                         down_request[stair_now] = 0;    // 说明电梯方向反转
                         direction = DOWN;
+			            Display_change(stair_now,OUTSIDE_DOWN,BLACK);
                     }
                     /*
                     direction = DOWN;
@@ -780,6 +779,7 @@ void State_transition(void)
                     else{
                         up_request[stair_now] = 0;    // 说明电梯方向反转
                         direction = UP;
+			            Display_change(stair_now,OUTSIDE_UP,BLACK);
                     }
                     /*
                     direction = UP;
@@ -863,8 +863,8 @@ void main(void){
 	uchar ctrl = NOKEY;
 	uchar i;
 	unsigned int j, k;
-	unsigned char c, v, v1;
-	long int add;
+	uchar high, low;
+	//add = 0;
 
 	WDTCN = 0xde;
 	WDTCN = 0xad;   // 禁止看门狗
@@ -930,6 +930,30 @@ void main(void){
 		if(i > 1)
 			Display_change(i,OUTSIDE_DOWN,BLACK);
 	}
+
+	add = 0;        // 每段数据长32KB，录制时注意改变起始地址位置！
+
+	P6 = 0x00; // 片选有效
+	Timer0_us(1);
+	SPI_Write(0x03); // 读数据命令
+	SPI_Write((add & 0x00FF0000) >> 16);
+	SPI_Write((add & 0x0000FF00) >> 8);
+	SPI_Write(add & 0x00FF); // 24 位地址
+	Timer0_us(1);
+	for (k=0; k<length; k++){
+		for (j=0; j<2; j++){
+			if (!j){
+				high = SPI_Write(0x00);         // 读高位
+	            record[k] = (high << 8);
+			}
+			else{
+				low = SPI_Write(0x00);         // 读低位
+				record[k] += low;
+			}
+			Timer0_us(1);
+	    }
+	}
+	P6 = 0x80; 			   // 片选无效
 
 	while(1){
 		SHOW_LED(stair_now);	// 数码管显示楼层
@@ -1006,6 +1030,7 @@ void main(void){
 				}
 				break;
 			case 0x5:
+				Lcd1602_Write_Command(0x80);
 				for (j = 0; j < 16; j++)
                     Lcd1602_Write_Data(fifth_up[j]); 	    // DATA
 
@@ -1227,35 +1252,31 @@ void main(void){
             // F5 状态说明电梯到达某一层，需要进行语音提示
             // 由于xdata内存限制，每次先将FLASH中内容存到xdata，再进行播放
             // PLUG DATA OUT FIRST
-            add = 2*length*(stair_now-1);        // 每段数据长32KB，录制时注意改变起始地址位置！
-            for (j=0; j<length; j++){
-                P6 = 0x00; // 片选有效
-				Timer0_us(1);
-				SPI_Write(0x03); // 读数据命令
-				SPI_Write((add & 0x00FF0000) >> 16);
-				SPI_Write((add & 0x0000FF00) >> 8);
-				SPI_Write(add & 0x00FF); // 24 位地址
-				Timer0_us(1);
+            //add = 2*length*(stair_now-1);        // 每段数据长32KB，录制时注意改变起始地址位置！
+			/*
+            P6 = 0x00; // 片选有效
+			Timer0_us(1);
+			SPI_Write(0x03); // 读数据命令
+			SPI_Write((add & 0x00FF0000) >> 16);
+			SPI_Write((add & 0x0000FF00) >> 8);
+			SPI_Write(add & 0x00FF); // 24 位地址
+			Timer0_us(1);
 
-                high = SPI_Write(0x00);         // 读高位
-                add++;
-                P6 = 0x80; // 片选无效
-
-                P6 = 0x00; // 片选有效
-				Timer0_us(1);
-				SPI_Write(0x03); // 读数据命令
-				SPI_Write((j & 0x00FF0000) >> 16);
-				SPI_Write((j & 0x0000FF00) >> 8);
-				SPI_Write(j & 0x00FF); // 24 位地址
-				Timer0_us(1);
-
-                low = SPI_Write(0x00);         // 读低位
-                add++;
-                P6 = 0x80; // 片选无效
-
-				record[j] = (unsigned int)(((unsigned int)high)<<8 + low);      // 写入XDATA
-            }
-
+			for (k=0; k<length; k++){
+				for (j=0; j<2; j++){
+					if (!j){
+						high = SPI_Write(0x00);         // 读高位
+	                	record[k] = (high << 8);
+					}
+					else{
+						low = SPI_Write(0x00);         // 读低位
+						record[k] += low;
+					}
+					Timer0_us(1);
+	            }
+			}
+			P6 = 0x80; 			   // 片选无效
+			*/
             DAC1CN = 0x97;		   // DAC打开
 			itr = 0;
 			while(itr < length);
