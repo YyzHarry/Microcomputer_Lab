@@ -764,6 +764,7 @@ void State_transition(void)
                     else{
                         down_request[stair_now] = 0;    // 说明电梯方向反转
                         direction = DOWN;
+						Display_change(stair_now,OUTSIDE_DOWN,BLACK);
                     }
                     /*
                     direction = DOWN;
@@ -780,6 +781,7 @@ void State_transition(void)
                     else{
                         up_request[stair_now] = 0;    // 说明电梯方向反转
                         direction = UP;
+						Display_change(stair_now,OUTSIDE_UP,BLACK);
                     }
                     /*
                     direction = UP;
@@ -1021,6 +1023,7 @@ void main(void){
 				}
 				break;
 			case 0x5:
+				Lcd1602_Write_Command(0x80);
 				for (j = 0; j < 16; j++)
                     Lcd1602_Write_Data(fifth_up[j]); 	    // DATA
 
