@@ -888,6 +888,30 @@ void main(void){
 
 	P74OUT = 0x30;      // P6_out
 
+	add = 0;        // 每段数据长32KB，录制时注意改变起始地址位置！
+
+	P6 = 0x00; // 片选有效
+	Timer0_us(1);
+	SPI_Write(0x03); // 读数据命令
+	SPI_Write((add & 0x00FF0000) >> 16);
+	SPI_Write((add & 0x0000FF00) >> 8);
+	SPI_Write(add & 0x00FF); // 24 位地址
+	Timer0_us(1);
+	for (k=0; k<length; k++){
+		for (j=0; j<2; j++){
+			if (!j){
+				high = SPI_Write(0x00);         // 读高位
+	            record[k] = (high << 8);
+			}
+			else{
+				low = SPI_Write(0x00);         // 读低位
+				record[k] += low;
+			}
+			Timer0_us(1);
+	    }
+	}
+	P6 = 0x80; 			   // 片选无效
+	
 	// 计数器0的设置
 	EA = 1;
 	TMOD |= 0x02;
@@ -895,7 +919,7 @@ void main(void){
 	TL0 = 0x00;
 	ET0 = 1;
 	P7 = 0x80;
-
+	
 	for(i = 0; i <= STAIR_SUM; i++){
 		up_request[i] = 0;
 		down_request[i] = 0;
@@ -930,30 +954,6 @@ void main(void){
 		if(i > 1)
 			Display_change(i,OUTSIDE_DOWN,BLACK);
 	}
-
-	add = 0;        // 每段数据长32KB，录制时注意改变起始地址位置！
-
-	P6 = 0x00; // 片选有效
-	Timer0_us(1);
-	SPI_Write(0x03); // 读数据命令
-	SPI_Write((add & 0x00FF0000) >> 16);
-	SPI_Write((add & 0x0000FF00) >> 8);
-	SPI_Write(add & 0x00FF); // 24 位地址
-	Timer0_us(1);
-	for (k=0; k<length; k++){
-		for (j=0; j<2; j++){
-			if (!j){
-				high = SPI_Write(0x00);         // 读高位
-	            record[k] = (high << 8);
-			}
-			else{
-				low = SPI_Write(0x00);         // 读低位
-				record[k] += low;
-			}
-			Timer0_us(1);
-	    }
-	}
-	P6 = 0x80; 			   // 片选无效
 
 	while(1){
 		SHOW_LED(stair_now);	// 数码管显示楼层
