@@ -18,9 +18,10 @@ Implemented mostly by __C51__, some by __Assembly__.
 These are all of the __Module Experiment__.
 
 ## Final Project
-The first version is uploaded.
+The final project realizes an elevator control system. It has graphic interface based on TFT, can record Beep tone using SPI Flash and XRAM.
+Also, LED, Lcd1602, AD/DA and keyboard are used.
 
-__Not Complete Yet.__
+For more information, you can see __README.md__ in folder "Final Project".
 
 ## Environment
 Locally tested by ___Keil___. ___C8051F020___ is the chip we use.
