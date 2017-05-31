@@ -10,6 +10,9 @@ The latest version is __3.1__.
 
 ## Demo
 This picture is the final demo of the project.
+![][Show]
+
+## Version overview
 
 ### Version 1.0
 Implemented Finite State Machine, with LED displaying the position of the elevator.
