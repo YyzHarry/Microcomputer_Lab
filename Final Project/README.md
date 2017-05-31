@@ -10,7 +10,8 @@ The latest version is __3.1__.
 
 ## Demo
 This picture is the final demo of the project.
-![][Show]
+
+![](https://github.com/YyzHarry/Microcomputer_Lab/tree/master/Final%20Project/Show.jpg)
 
 ## Version overview
 
